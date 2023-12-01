@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Java Debug",
+        "type": "java",
+        "request": "launch",
+        "mainClass": "src.services.Main",
+        "args": ""
+      }
+    ]
+  }
+  
