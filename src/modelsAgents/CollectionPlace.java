@@ -137,10 +137,16 @@ public class CollectionPlace extends Agent {
         }
         msg.setContent(String.valueOf(this.initTime));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
-            ArrayList<SupplyActivity> pendingSupplyActivityList = getPendingSupplyActivityList();
+            ArrayList<SupplyActivity> pendingSupplyActivityList;
+
+            @Override
+            public void onStart() {
+                this.pendingSupplyActivityList = getPendingSupplyActivityList();
+                super.onStart();
+            }
 
             protected void handleAllResponses(Vector responses, Vector acceptances) {
-                ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
+                ArrayList<ACLMessage> responsesList = new ArrayList<ACLMessage>(responses);
                 responsesList.removeIf(message -> message.getPerformative() != ACLMessage.PROPOSE);
                 orderRequireSupplyObj(responsesList);
                 for (ACLMessage aclMessage : responsesList) {
@@ -185,7 +191,13 @@ public class CollectionPlace extends Agent {
             msg.addReceiver(agent.getAID());
         }
         this.addBehaviour(new ContractNetInitiator(this, msg) {
-            protected SupplyActivity supplyActivity = getSupplyActivity();
+            SupplyActivity supplyActivity;
+
+            @Override
+            public void onStart() {
+                this.supplyActivity = getSupplyActivity();
+                super.onStart();
+            }
 
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
@@ -213,12 +225,13 @@ public class CollectionPlace extends Agent {
 
             @Override
             public int onEnd() {
-                super.onEnd();
+                System.out.println(this.supplyActivity.getSupplyActivityProposed());
                 if (Objects.nonNull(this.supplyActivity.getSupplyActivityProposed())) {
                     BI_ConsultTransport();
                 } else {
                     F_SetActualSupplyActivity();
                 }
+                super.onEnd();
                 return 0;
             }
         });
@@ -231,7 +244,13 @@ public class CollectionPlace extends Agent {
             msg.addReceiver(agent.getAID());
         }
         this.addBehaviour(new ContractNetInitiator(this, msg) {
-            ArrayList<String> truckNameList = new ArrayList<>();
+            ArrayList<String> truckNameList;
+
+            @Override
+            public void onStart() {
+                this.truckNameList = new ArrayList<>();
+                super.onStart();
+            }
 
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
@@ -239,7 +258,7 @@ public class CollectionPlace extends Agent {
                 for (ACLMessage aclMessage : responsesList) {
                     ACLMessage reply = aclMessage.createReply();
                     reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                    truckNameList.addAll(new Gson().fromJson(aclMessage.getContent(), ArrayList.class));
+                    this.truckNameList.addAll(new Gson().fromJson(aclMessage.getContent(), ArrayList.class));
                     acceptances.addElement(reply);
                 }
             }
@@ -252,7 +271,7 @@ public class CollectionPlace extends Agent {
             public int onEnd() {
                 super.onEnd();
                 if (!truckNameList.isEmpty()) {
-                    BI_ConsultFreight(truckNameList);
+                    BI_ConsultFreight(this.truckNameList);
                 } else {
                     F_SetActualSupplyActivity();
                 }
@@ -269,7 +288,13 @@ public class CollectionPlace extends Agent {
         }
         msg.setContent(new Gson().toJson(supplyActivity));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
-            protected SupplyActivity supplyActivity = getSupplyActivity();
+            protected SupplyActivity supplyActivity;
+
+            @Override
+            public void onStart() {
+                this.supplyActivity = getSupplyActivity();
+                super.onStart();
+            }
 
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);

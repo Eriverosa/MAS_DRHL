@@ -66,6 +66,13 @@ public class Transporter extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_REGISTER_TO_CARRIER));
         addBehaviour(new AchieveREResponder(this, template) {
+            private ArrayList<String> truckPayroll;
+
+            @Override
+            public void onStart() {
+                this.truckPayroll = getTruckPayroll();
+                super.onStart();
+            }
 
             @Override
             protected ACLMessage handleRequest(ACLMessage request) {
@@ -78,7 +85,7 @@ public class Transporter extends Agent {
 
             @Override
             protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
-                getTruckPayroll().add(request.getSender().getLocalName());
+                this.truckPayroll.add(request.getSender().getLocalName());
                 System.out.println("Agente camion registrado");
                 return null;
             }
@@ -90,11 +97,19 @@ public class Transporter extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_TRANSPORTER));
         this.addBehaviour(new ContractNetResponder(this, template) {
+            private ArrayList<String> truckPayroll;
+
+            @Override
+            public void onStart() {
+                this.truckPayroll = getTruckPayroll();
+                super.onStart();
+            }
+
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
                 reply.setPerformative(getEnabled() ? ACLMessage.PROPOSE : ACLMessage.FAILURE);
-                reply.setContent(new Gson().toJson(getTruckPayroll()));
+                reply.setContent(new Gson().toJson(this.truckPayroll));
                 return reply;
             }
 

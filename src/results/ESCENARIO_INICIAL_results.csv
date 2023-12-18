@@ -1,0 +1,4 @@
+horaInicioViajeCarga;tiempoViajeCarga;horaLlegadaViajeCarga;horaInicioCarga;tiempoCarga;horaFinCarga;horaInicioViajeDescarga;tiempoViajeDescarga;horaLlegadaViajeDescarga;horaInicioDescarga;tiempoDescarga;horaFinDescarga;pointNameSupplyActivityProposed;pointNameSupplyActivityRequired;pointNameSupplyActivityTransportation;ayudaRequerida;ayudaTransportada
+0;96;96;96;200;296;296;340;636;636;100;736;Donador3;PuntoDistribucion5;Transporte4_7ton_1;500;500
+300000;83;300083;300083;200;300283;300283;129;300412;300412;100;300512;Donador1;PuntoDistribucion5;Transporte2_7ton_1;500;500
+600000;57;600057;600057;200;600257;600257;129;600386;600386;100;600486;Donador2;PuntoDistribucion5;Transporte2_7ton_1;500;500

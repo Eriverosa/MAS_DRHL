@@ -1,22 +1,8 @@
 package src.commons;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.CSVWriter;
 import com.opencsv.CSVWriterBuilder;
-
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.List;
-import java.util.Map;
 
 import com.opencsv.ICSVWriter;
 
@@ -27,8 +13,8 @@ public class FileGenerator {
     String pathFolder = "./src/results/";
 
     // String csvFilePath = "ruta/del/archivo.csv";
-    public void generateFile(List<SupplyActivity> activitieSupplyActivityList) {
-        String filePath = pathFolder.concat("results.csv");
+    public void generateFile(String nameDocument,List<SupplyActivity> activitieSupplyActivityList) {
+        String filePath = pathFolder.concat(nameDocument).concat("_results.csv");
         char delimiter = ';';
         char quotechar = '\0';
 

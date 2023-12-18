@@ -39,17 +39,8 @@ public class SupplyActivityOrder {
         this.pointNameSupplyActivityRequired = supplyActivity.getSupplyActivityRequired().getAgentName();
         this.pointNameSupplyActivityTransportation = supplyActivity.getSupplyActivityTransportation().getAgentName();
         MaterialStock materialStock = supplyActivity.getSupplyActivityProposed().getMaterialStock();
-        System.out.println("supplyActivity.getSupplyActivityRequired().getCantidadPersonas()");
-        System.out.println(supplyActivity.getSupplyActivityRequired().getCantidadPersonas());
-        System.out.println("materialStock.toString()");
-        System.out.println(materialStock.toString());
-        System.out.println("supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada()");
-        System.out.println(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
-        System.out.println("materialStock.getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada())");
-        System.out.println(materialStock.getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada()));
         this.materialStock = materialStock
                 .getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
-        System.out.println("ln48");
     }
 
     public String toString(boolean prettyFormat) {

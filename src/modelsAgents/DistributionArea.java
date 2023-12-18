@@ -88,21 +88,31 @@ public class DistributionArea extends Agent {
             MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
                     MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY));
             this.addBehaviour(new ContractNetResponder(this, template) {
+                private Ubication ubication;
+                private Integer poblacion;
+                private ArrayList<SupplyActivityOrder> listSupplyActivities;
+
+                @Override
+                public void onStart() {
+                    this.poblacion = getPoblacion();
+                    this.ubication = getUbication();
+                    this.listSupplyActivities = getListSupplyActivities();
+                    super.onStart();
+                }
+
                 protected ACLMessage handleCfp(ACLMessage cfp) {
                     DF_HELPER.println(this.getAgent(), cfp);
                     ACLMessage reply = cfp.createReply();
                     if (getEnabled()) {
-                        if (getListSupplyActivities().isEmpty()) {
+                        if (this.listSupplyActivities.isEmpty()) {
                             long tiempoInicio = Long.valueOf(cfp.getContent());
-                            SupplyActivityRequired requiredSupply = new SupplyActivityRequired(getPoblacion(),
-                                    getUbication(),
-                                    this.myAgent.getLocalName(), tiempoInicio);
+                            SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
+                                    this.ubication, this.myAgent.getLocalName(), tiempoInicio);
                             reply.setPerformative(ACLMessage.PROPOSE);
                             reply.setContent(new Gson().toJson(requiredSupply));
                         } else {
                             System.out.println("EL DISTRIBUTION AREA YA TIENE ALGUNA ACTIVIDAD, DEBE TRABAJARLA");
                             System.exit(0);
-
                         }
 
                     } else {
@@ -128,25 +138,27 @@ public class DistributionArea extends Agent {
                     MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY));
 
             this.addBehaviour(new ContractNetResponder(this, template) {
+                private Integer poblacion;
+                private Ubication ubication;
+
+                @Override
+                public void onStart() {
+                    this.poblacion = getPoblacion();
+                    this.ubication = getUbication();
+                    super.onStart();
+                }
+
                 protected ACLMessage handleCfp(ACLMessage cfp) {
                     // getMaterialStock().repartirOptimizado(Integer.parseInt(cfp.getContent()));
                     DF_HELPER.println(this.getAgent(), cfp);
                     ACLMessage reply = cfp.createReply();
-                    SupplyActivity supplyActivity = (SupplyActivity) new Gson()
-                            .fromJson(cfp.getContent(), SupplyActivity.class);
                     if (getEnabled()) {
                         long tiempoInicio = 0;
                         if (!listSupplyActivities.isEmpty()) {
                             System.exit(0);
                         }
-                        // if (!listSupplyActivities.isEmpty()) {
-                        // tiempoInicio = 999;
-                        // System.out.println("Pasó la primera iteración");
-                        // System.exit(0);
-                        // }
-                        SupplyActivityRequired requiredSupply = new SupplyActivityRequired(getPoblacion(),
-                                getUbication(),
-                                this.myAgent.getLocalName(), tiempoInicio);
+                        SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
+                                this.ubication, this.myAgent.getLocalName(), tiempoInicio);
                         reply.setPerformative(ACLMessage.PROPOSE);
                         reply.setContent(new Gson().toJson(requiredSupply));
                     } else {
@@ -177,11 +189,18 @@ public class DistributionArea extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY));
         this.addBehaviour(new AchieveREResponder(this, template) {
+            private MaterialStock materialStock;
+
+            @Override
+            public void onStart() {
+                this.materialStock = getMaterialStock();
+                super.onStart();
+            }
+
             protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
                 SupplyActivity supplyActivity = (SupplyActivity) new Gson()
                         .fromJson(request.getContent(), SupplyActivity.class);
-                getMaterialStock().addMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
-
+                this.materialStock.addMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
                 DF_HELPER.println(this.myAgent, request);
                 return request.createReply();
             }

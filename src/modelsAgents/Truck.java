@@ -141,14 +141,20 @@ public class Truck extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_REQUEST_FREIGHT));
         this.addBehaviour(new ContractNetResponder(this, template) {
-            ArrayList<SupplyActivityOrder> listSupplyActivities = getListSupplyActivities();
+            ArrayList<SupplyActivityOrder> listSupplyActivities;
+
+            @Override
+            public void onStart() {
+                this.listSupplyActivities = getListSupplyActivities();
+                // TODO Auto-generated method stub
+                super.onStart();
+            }
 
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
                 if (getEnabled()) {
                     if (searchRoute()) {
-                        // if (this.listSupplyActivities.isEmpty()) {
                         SupplyActivity supplyActivity = (SupplyActivity) new Gson()
                                 .fromJson(cfp.getContent(), SupplyActivity.class);
                         long tiempoViajeCarga = getTravelTime(getUbication(),
@@ -204,10 +210,19 @@ public class Truck extends Agent {
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY));
 
         this.addBehaviour(new AchieveREResponder(this, template) {
+            ArrayList<SupplyActivityOrder> listSupplyActivities;
+
+            @Override
+            public void onStart() {
+                this.listSupplyActivities = getListSupplyActivities();
+                // TODO Auto-generated method stub
+                super.onStart();
+            }
+
             protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
                 SupplyActivity requiredSupply = (SupplyActivity) new Gson()
                         .fromJson(request.getContent(), SupplyActivity.class);
-                listSupplyActivities.add(new SupplyActivityOrder(requiredSupply));
+                this.listSupplyActivities.add(new SupplyActivityOrder(requiredSupply));
                 DF_HELPER.println(this.myAgent, request);
                 return request.createReply();
             }

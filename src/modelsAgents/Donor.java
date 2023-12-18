@@ -88,12 +88,19 @@ public class Donor extends Agent {
 
         this.addBehaviour(new ContractNetResponder(this, template) {
             MaterialStock materialStock;
+            Boolean enabled;
+
+            @Override
+            public void onStart() {
+                this.enabled = getEnabled();
+                this.materialStock = getMaterialStock();
+                super.onStart();
+            }
 
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
-                if (getEnabled()) {
-                    this.materialStock = getMaterialStock();
+                if (this.enabled) {
                     SupplyActivityRequired requiredSupply = (SupplyActivityRequired) new Gson()
                             .fromJson(cfp.getContent(), SupplyActivityRequired.class).clone();
                     MaterialStock materialStockSupply = this.materialStock

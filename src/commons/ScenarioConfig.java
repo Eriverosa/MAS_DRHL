@@ -1,9 +1,7 @@
 package src.commons;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import src.commons.AgentConfig.CreationAgentConfig;
@@ -13,12 +11,12 @@ public class ScenarioConfig {
 
     static {
         CREATION_SCENARIO_CONFIG_LIST = new ArrayList<>();
-        CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("ESCENARIO INICIAL", 2,
+        CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 3,
                 Arrays.asList(
                         new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 100),
                         new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 10),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
                         new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
         // CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("PRIMER SISMO",
         // Arrays.asList(

@@ -108,7 +108,8 @@ public class Administrator extends Agent {
                 .getBehaviourCreationScnearionConfigList()) {
             ArrayList<Agent> agentsList = DF_HELPER.getAgentsList(behaviorConfig.getCreationAgentConfig());
             Collections.shuffle(agentsList);
-            Integer nEnabledAgents = Objects.isNull(behaviorConfig.getnEnabledAgents()) ? agentsList.size() : Math.min(behaviorConfig.getnEnabledAgents(), agentsList.size());
+            Integer nEnabledAgents = Objects.isNull(behaviorConfig.getnEnabledAgents()) ? agentsList.size()
+                    : Math.min(behaviorConfig.getnEnabledAgents(), agentsList.size());
             listAgentsEnable.addAll(agentsList.subList(0, nEnabledAgents));
             listAgentsDisable.addAll(agentsList.subList(nEnabledAgents, agentsList.size()));
         }
@@ -204,6 +205,13 @@ public class Administrator extends Agent {
         });
     }
 
+    public void F_PrintResults() {
+        DF_HELPER.println("PRINT RESULTS");
+        FileGenerator fileteGenerator = new FileGenerator();
+        fileteGenerator.generateFile(this.getCurrCreationScenarioConfig().getName(), supplyActivitiesList);
+        System.exit(0);
+    }
+
     public void BR_CreacionFinalizada() {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_FINISHED_CREATION));
@@ -246,13 +254,6 @@ public class Administrator extends Agent {
             }
 
         });
-    }
-
-    public void F_PrintResults() {
-        DF_HELPER.println("PRINT RESULTS");
-        FileGenerator fileteGenerator = new FileGenerator();
-        fileteGenerator.generateFile(supplyActivitiesList);
-        System.exit(0);
     }
 
     public void crearAgentesTransporte() {
