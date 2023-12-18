@@ -1,76 +1,89 @@
 package src.models;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class SupplyActivityOrder {
-    private long horaInicioActividad, horaFinActividad;
-    private String SupplyPoint;
+    // CARGA
+    private long horaInicioViajeCarga, tiempoViajeCarga, horaLlegadaViajeCarga, horaInicioCarga, tiempoCarga,
+            horaFinCarga;
+    // DESCARGA
+    private long horaInicioViajeDescarga, tiempoViajeDescarga, horaLlegadaViajeDescarga, horaInicioDescarga,
+            tiempoDescarga,
+            horaFinDescarga;
+    // private long horaInicioViajeDescarga, tiempoViajeDescarga,
+    // horaLlegadaViajeDescarga, horaInicioDescarga,
+    // tiempoDescarga, horaFinDescarga;
+    // private String SupplyPoint;
     private MaterialStock materialStock;
-    private long tiempoViajeInicioActividad, horaInicioCarga, tiempoViajeFinActividad, horaFinCarga;
+    // private long tiempoViajeInicioActividad, horaInicioCarga,
+    // tiempoViajeFinActividad, horaFinCarga;
     private String pointNameSupplyActivityProposed, pointNameSupplyActivityRequired,
             pointNameSupplyActivityTransportation;
-    private long horaSiguienteRequerimiento;
+    // private long horaSiguienteRequerimiento;
 
-    @Override
-    public String toString() {
-        Gson gson = new Gson();
+    public SupplyActivityOrder(SupplyActivity supplyActivity) {
+        this.horaInicioViajeCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioViajeCarga();
+        this.tiempoViajeCarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeCarga();
+        this.horaLlegadaViajeCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
+        this.horaInicioCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
+        this.tiempoCarga = 200;
+        this.horaFinCarga = this.horaInicioCarga + this.tiempoCarga;
+        this.horaInicioViajeDescarga = this.horaFinCarga;
+        this.tiempoViajeDescarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeDescarga();
+        this.horaLlegadaViajeDescarga = horaInicioViajeDescarga + tiempoViajeDescarga;
+        this.horaInicioDescarga = this.horaLlegadaViajeDescarga;
+        this.tiempoDescarga = 100;
+        this.horaFinDescarga = this.horaInicioDescarga + this.tiempoDescarga;
+        this.pointNameSupplyActivityProposed = supplyActivity.getSupplyActivityProposed().getAgentName();
+        this.pointNameSupplyActivityRequired = supplyActivity.getSupplyActivityRequired().getAgentName();
+        this.pointNameSupplyActivityTransportation = supplyActivity.getSupplyActivityTransportation().getAgentName();
+        MaterialStock materialStock = supplyActivity.getSupplyActivityProposed().getMaterialStock();
+        System.out.println("supplyActivity.getSupplyActivityRequired().getCantidadPersonas()");
+        System.out.println(supplyActivity.getSupplyActivityRequired().getCantidadPersonas());
+        System.out.println("materialStock.toString()");
+        System.out.println(materialStock.toString());
+        System.out.println("supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada()");
+        System.out.println(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
+        System.out.println("materialStock.getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada())");
+        System.out.println(materialStock.getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada()));
+        this.materialStock = materialStock
+                .getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
+        System.out.println("ln48");
+    }
+
+    public String toString(boolean prettyFormat) {
+        Gson gson;
+        if (prettyFormat) {
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        } else {
+            gson = new Gson();
+        }
         return gson.toJson(this);
     }
 
-    public SupplyActivityOrder(SupplyActivity supplyActivityProposal) {
-        this.horaInicioActividad = supplyActivityProposal.getSupplyActivityTransportation().getHoraInicio();
-        this.tiempoViajeInicioActividad = supplyActivityProposal.getSupplyActivityTransportation()
-                .getTiempoViajeCarga();
-        this.horaInicioCarga = supplyActivityProposal.getSupplyActivityTransportation().getHoraInicioCarga();
-        this.horaFinActividad = supplyActivityProposal.getSupplyActivityTransportation().getHoraFin();
-        this.tiempoViajeFinActividad = supplyActivityProposal.getSupplyActivityTransportation()
-                .getTiempoViajeDescarga();
-        this.horaFinCarga = supplyActivityProposal.getSupplyActivityTransportation().getHoraFin();
-        this.materialStock = supplyActivityProposal.getSupplyActivityProposed().getMaterialStock();
-        this.pointNameSupplyActivityProposed = supplyActivityProposal.getSupplyActivityProposed().getAgentName();
-        this.pointNameSupplyActivityRequired = supplyActivityProposal.getSupplyActivityRequired().getAgentName();
-        this.pointNameSupplyActivityTransportation = supplyActivityProposal.getSupplyActivityTransportation()
-                .getAgentName();
-    }
-    
-    public long getHoraInicioActividad() {
-        return horaInicioActividad;
+    public long getHoraInicioViajeCarga() {
+        return horaInicioViajeCarga;
     }
 
-    public void setHoraInicioActividad(long horaInicioActividad) {
-        this.horaInicioActividad = horaInicioActividad;
+    public void setHoraInicioViajeCarga(long horaInicioViajeCarga) {
+        this.horaInicioViajeCarga = horaInicioViajeCarga;
     }
 
-    public long getHoraFinActividad() {
-        return horaFinActividad;
+    public long getTiempoViajeCarga() {
+        return tiempoViajeCarga;
     }
 
-    public void setHoraFinActividad(long horaFinActividad) {
-        this.horaFinActividad = horaFinActividad;
+    public void setTiempoViajeCarga(long tiempoViajeCarga) {
+        this.tiempoViajeCarga = tiempoViajeCarga;
     }
 
-    public String getSupplyPoint() {
-        return SupplyPoint;
+    public long getHoraLlegadaViajeCarga() {
+        return horaLlegadaViajeCarga;
     }
 
-    public void setSupplyPoint(String supplyPoint) {
-        SupplyPoint = supplyPoint;
-    }
-
-    public MaterialStock getMaterialStock() {
-        return materialStock;
-    }
-
-    public void setMaterialStock(MaterialStock materialStock) {
-        this.materialStock = materialStock;
-    }
-
-    public long getTiempoViajeInicioActividad() {
-        return tiempoViajeInicioActividad;
-    }
-
-    public void setTiempoViajeInicioActividad(long tiempoViajeInicioActividad) {
-        this.tiempoViajeInicioActividad = tiempoViajeInicioActividad;
+    public void setHoraLlegadaViajeCarga(long horaLlegadaViajeCarga) {
+        this.horaLlegadaViajeCarga = horaLlegadaViajeCarga;
     }
 
     public long getHoraInicioCarga() {
@@ -81,12 +94,12 @@ public class SupplyActivityOrder {
         this.horaInicioCarga = horaInicioCarga;
     }
 
-    public long getTiempoViajeFinActividad() {
-        return tiempoViajeFinActividad;
+    public long getTiempoCarga() {
+        return tiempoCarga;
     }
 
-    public void setTiempoViajeFinActividad(long tiempoViajeFinActividad) {
-        this.tiempoViajeFinActividad = tiempoViajeFinActividad;
+    public void setTiempoCarga(long tiempoCarga) {
+        this.tiempoCarga = tiempoCarga;
     }
 
     public long getHoraFinCarga() {
@@ -95,6 +108,62 @@ public class SupplyActivityOrder {
 
     public void setHoraFinCarga(long horaFinCarga) {
         this.horaFinCarga = horaFinCarga;
+    }
+
+    public long getHoraInicioViajeDescarga() {
+        return horaInicioViajeDescarga;
+    }
+
+    public void setHoraInicioViajeDescarga(long horaInicioViajeDescarga) {
+        this.horaInicioViajeDescarga = horaInicioViajeDescarga;
+    }
+
+    public long getTiempoViajeDescarga() {
+        return tiempoViajeDescarga;
+    }
+
+    public void setTiempoViajeDescarga(long tiempoViajeDescarga) {
+        this.tiempoViajeDescarga = tiempoViajeDescarga;
+    }
+
+    public long getHoraLlegadaViajeDescarga() {
+        return horaLlegadaViajeDescarga;
+    }
+
+    public void setHoraLlegadaViajeDescarga(long horaLlegadaViajeDescarga) {
+        this.horaLlegadaViajeDescarga = horaLlegadaViajeDescarga;
+    }
+
+    public long getHoraInicioDescarga() {
+        return horaInicioDescarga;
+    }
+
+    public void setHoraInicioDescarga(long horaInicioDescarga) {
+        this.horaInicioDescarga = horaInicioDescarga;
+    }
+
+    public long getTiempoDescarga() {
+        return tiempoDescarga;
+    }
+
+    public void setTiempoDescarga(long tiempoDescarga) {
+        this.tiempoDescarga = tiempoDescarga;
+    }
+
+    public long getHoraFinDescarga() {
+        return horaFinDescarga;
+    }
+
+    public void setHoraFinDescarga(long horaFinDescarga) {
+        this.horaFinDescarga = horaFinDescarga;
+    }
+
+    public MaterialStock getMaterialStock() {
+        return materialStock;
+    }
+
+    public void setMaterialStock(MaterialStock materialStock) {
+        this.materialStock = materialStock;
     }
 
     public String getPointNameSupplyActivityProposed() {
@@ -119,18 +188,6 @@ public class SupplyActivityOrder {
 
     public void setPointNameSupplyActivityTransportation(String pointNameSupplyActivityTransportation) {
         this.pointNameSupplyActivityTransportation = pointNameSupplyActivityTransportation;
-    }
-
-    public long getHoraSiguienteRequerimiento() {
-        return horaSiguienteRequerimiento;
-    }
-
-    public void setHoraSiguienteRequerimiento(long horaSiguienteRequerimiento) {
-        this.horaSiguienteRequerimiento = horaSiguienteRequerimiento;
-    }
-    
-    public void estimarHoraSiguienteRequerimiento(MaterialStock materialStock){
-        
     }
 
 }

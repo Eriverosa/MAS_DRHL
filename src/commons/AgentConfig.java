@@ -19,7 +19,7 @@ public class AgentConfig {
     private static final String COLLECTION_CLASS = "CollectionPlace";
 
     public class CreationAgentConfig {
-        String fileRoute, className, classRoute ;
+        String fileRoute, className, classRoute;
         Integer numInitialAgents, numInFileAgents, numCurrAgentsCreation;
         Profile profile;
         ContainerController containerController;
@@ -49,7 +49,7 @@ public class AgentConfig {
         public void setFileRoute(String fileRoute) {
             this.fileRoute = fileRoute;
         }
-        
+
         public String getClassRoute() {
             return classRoute;
         }
@@ -117,7 +117,7 @@ public class AgentConfig {
         public void setDisableIterationBoolean() {
             this.enabledIterationBoolean = false;
         }
-        
+
     }
 
     /*
@@ -175,24 +175,22 @@ public class AgentConfig {
         return CREATION_CONFIG_LIST;
     }
 
-    public static CreationAgentConfig getNextCreationAgentConfigEnable(){
+    public static CreationAgentConfig getNextCreationAgentConfigEnable() {
         ArrayList<CreationAgentConfig> list = (ArrayList<CreationAgentConfig>) CREATION_CONFIG_LIST.stream()
                 .filter(agentConfig -> agentConfig.getEnabledIterationBoolean() == true)
                 .collect(Collectors.toList());
         return list.isEmpty() ? null : list.get(0);
     }
 
-    public static void enableCreationConfigList(){
-        AgentConfig.getCREATION_CONFIG_LIST().replaceAll(agentConfig -> {
-            agentConfig.setEnabledIterationBoolean();
-            return agentConfig;
-        });
+    public static void enableCreationConfigList() {
+        for (CreationAgentConfig creationAgentConfig : CREATION_CONFIG_LIST) {
+            creationAgentConfig.enabledIterationBoolean = true;
+        }
     }
 
-    public static void disableCreationConfigList(){
-        AgentConfig.getCREATION_CONFIG_LIST().replaceAll(agentConfig -> {
-            agentConfig.setDisableIterationBoolean();
-            return agentConfig;
-        });
+    public static void disableCreationConfigList() {
+        for (CreationAgentConfig creationAgentConfig : CREATION_CONFIG_LIST) {
+            creationAgentConfig.enabledIterationBoolean = false;
+        }
     }
 }

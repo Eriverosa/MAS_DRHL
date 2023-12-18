@@ -92,15 +92,19 @@ public class DistributionArea extends Agent {
                     DF_HELPER.println(this.getAgent(), cfp);
                     ACLMessage reply = cfp.createReply();
                     if (getEnabled()) {
-                        long tiempoInicio = Long.valueOf(cfp.getContent());
-                        if (!listSupplyActivities.isEmpty()) {
+                        if (getListSupplyActivities().isEmpty()) {
+                            long tiempoInicio = Long.valueOf(cfp.getContent());
+                            SupplyActivityRequired requiredSupply = new SupplyActivityRequired(getPoblacion(),
+                                    getUbication(),
+                                    this.myAgent.getLocalName(), tiempoInicio);
+                            reply.setPerformative(ACLMessage.PROPOSE);
+                            reply.setContent(new Gson().toJson(requiredSupply));
+                        } else {
+                            System.out.println("EL DISTRIBUTION AREA YA TIENE ALGUNA ACTIVIDAD, DEBE TRABAJARLA");
                             System.exit(0);
+
                         }
-                        SupplyActivityRequired requiredSupply = new SupplyActivityRequired(getPoblacion(),
-                                getUbication(),
-                                this.myAgent.getLocalName(), tiempoInicio);
-                        reply.setPerformative(ACLMessage.PROPOSE);
-                        reply.setContent(new Gson().toJson(requiredSupply));
+
                     } else {
                         reply.setPerformative(ACLMessage.FAILURE);
                     }
@@ -176,7 +180,7 @@ public class DistributionArea extends Agent {
             protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
                 SupplyActivity supplyActivity = (SupplyActivity) new Gson()
                         .fromJson(request.getContent(), SupplyActivity.class);
-                getMaterialStock().updateMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
+                getMaterialStock().addMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
 
                 DF_HELPER.println(this.myAgent, request);
                 return request.createReply();
@@ -204,5 +208,97 @@ public class DistributionArea extends Agent {
     public String toString() {
         Gson gson = new Gson();
         return gson.toJson(this);
+    }
+
+    public DFHelper getDF_HELPER() {
+        return DF_HELPER;
+    }
+
+    public String getIdCamion() {
+        return IdCamion;
+    }
+
+    public void setIdCamion(String idCamion) {
+        IdCamion = idCamion;
+    }
+
+    public String getPuntoInicial() {
+        return PuntoInicial;
+    }
+
+    public void setPuntoInicial(String puntoInicial) {
+        PuntoInicial = puntoInicial;
+    }
+
+    public long getCapacidad() {
+        return Capacidad;
+    }
+
+    public void setCapacidad(long capacidad) {
+        Capacidad = capacidad;
+    }
+
+    public long getVelocidadVacio() {
+        return VelocidadVacio;
+    }
+
+    public void setVelocidadVacio(long velocidadVacio) {
+        VelocidadVacio = velocidadVacio;
+    }
+
+    public long getVelocidadCargado() {
+        return VelocidadCargado;
+    }
+
+    public void setVelocidadCargado(long velocidadCargado) {
+        VelocidadCargado = velocidadCargado;
+    }
+
+    public long getDuracionDescargas() {
+        return DuracionDescargas;
+    }
+
+    public void setDuracionDescargas(long duracionDescargas) {
+        DuracionDescargas = duracionDescargas;
+    }
+
+    public long getTiempoOperacion() {
+        return TiempoOperacion;
+    }
+
+    public void setTiempoOperacion(long tiempoOperacion) {
+        TiempoOperacion = tiempoOperacion;
+    }
+
+    public long getTotalTransportado() {
+        return TotalTransportado;
+    }
+
+    public void setTotalTransportado(long totalTransportado) {
+        TotalTransportado = totalTransportado;
+    }
+
+    public long getDuracionTotalViaje() {
+        return DuracionTotalViaje;
+    }
+
+    public void setDuracionTotalViaje(long duracionTotalViaje) {
+        DuracionTotalViaje = duracionTotalViaje;
+    }
+
+    public long getDuracionAculatamiento() {
+        return DuracionAculatamiento;
+    }
+
+    public void setDuracionAculatamiento(long duracionAculatamiento) {
+        DuracionAculatamiento = duracionAculatamiento;
+    }
+
+    public ArrayList<SupplyActivityOrder> getListSupplyActivities() {
+        return listSupplyActivities;
+    }
+
+    public void setListSupplyActivities(ArrayList<SupplyActivityOrder> listSupplyActivities) {
+        this.listSupplyActivities = listSupplyActivities;
     }
 }

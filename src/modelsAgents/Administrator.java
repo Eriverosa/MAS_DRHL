@@ -21,19 +21,24 @@ import jade.core.ProfileImpl;
 import jade.lang.acl.ACLMessage;
 import jade.core.Runtime;
 import jade.core.event.AgentEvent;
+import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetInitiator;
+import jade.proto.ContractNetResponder;
 import jade.proto.SimpleAchieveREResponder;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import src.commons.AgentConfig;
+import src.commons.FileGenerator;
 import src.commons.ParametersConfig;
 import src.commons.ScenarioConfig;
 import src.commons.TestConfig;
+import src.models.SupplyActivity;
+import src.models.SupplyActivityOrder;
 import src.commons.ScenarioConfig.BehaviourCreationScenarioConfig;
 import src.commons.ScenarioConfig.CreationScenarioConfig;
 import src.commons.AgentConfig.CreationAgentConfig;
@@ -41,13 +46,24 @@ import src.commons.AgentConfig.CreationAgentConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
 public class Administrator extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
-    private long currExecutionTime = 0;
+    private long currExecutionTime;
     private boolean first = true;
+    private CreationScenarioConfig currCreationScenarioConfig = null;
+    private ArrayList<SupplyActivity> supplyActivitiesList = new ArrayList<>();
+
+    public ArrayList<SupplyActivity> getSupplyActivitiesList() {
+        return supplyActivitiesList;
+    }
+
+    public void setSupplyActivitiesList(ArrayList<SupplyActivity> supplyActivitiesList) {
+        this.supplyActivitiesList = supplyActivitiesList;
+    }
 
     @Override
     protected void setup() {
@@ -78,48 +94,31 @@ public class Administrator extends Agent {
             }
         } else {
             AgentConfig.enableCreationConfigList();
+            this.currCreationScenarioConfig = ScenarioConfig
+                    .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
             this.F_UpdateState();
         }
     }
 
     public void F_UpdateState() {
-        CreationScenarioConfig currCreationScenarioConfig = null;
-        // HAY QUE HACER LA VARIABLE QUE PUEDA CREAR LOS EVENTOS ALEATORIOS
-        Boolean runEvent = true;
-        if (runEvent) {
-            currCreationScenarioConfig = ScenarioConfig.getNextCreationScenarioConfigEnable();
-            if (Objects.nonNull(currCreationScenarioConfig)) {
-                System.out.println("----PROCESS CHANGE STATE OF AGENTS----" + currCreationScenarioConfig.getName());
-                ArrayList<Agent> listAgentsEnable = new ArrayList<>();
-                ArrayList<Agent> listAgentsDisable = new ArrayList<>();
-
-                for (BehaviourCreationScenarioConfig currBehaviourCreationScenarioConfig : currCreationScenarioConfig
-                        .getBehaviourCreationScnearionConfigList()) {
-                    AtomicInteger nAgents = new AtomicInteger(0);
-                    for (Agent agent : DF_HELPER
-                            .getAgentsList(currBehaviourCreationScenarioConfig.getCreationAgentConfig())) {
-                        (nAgents.incrementAndGet() <= currBehaviourCreationScenarioConfig.getnEnabledAgents()
-                                ? listAgentsEnable
-                                : listAgentsDisable).add(agent);
-                    }
-                    currBehaviourCreationScenarioConfig.setDisable();
-                }
-                currCreationScenarioConfig.setDisable();
-                BI_UpdateState(listAgentsEnable, listAgentsDisable, true);
-            } else {
-                System.out.println("----END OF THE EVENTS----");
-                System.exit(0);
-                // System.out.println("No quedan currCreation");
-
-            }
+        DF_HELPER.println(this, "PROCESS CHANGE STATE OF AGENTS");
+        List<Agent> listAgentsEnable = new ArrayList<>();
+        List<Agent> listAgentsDisable = new ArrayList<>();
+        for (BehaviourCreationScenarioConfig behaviorConfig : this.currCreationScenarioConfig
+                .getBehaviourCreationScnearionConfigList()) {
+            ArrayList<Agent> agentsList = DF_HELPER.getAgentsList(behaviorConfig.getCreationAgentConfig());
+            Collections.shuffle(agentsList);
+            Integer nEnabledAgents = Objects.isNull(behaviorConfig.getnEnabledAgents()) ? agentsList.size() : Math.min(behaviorConfig.getnEnabledAgents(), agentsList.size());
+            listAgentsEnable.addAll(agentsList.subList(0, nEnabledAgents));
+            listAgentsDisable.addAll(agentsList.subList(nEnabledAgents, agentsList.size()));
         }
-
+        this.BI_UpdateState(listAgentsEnable, listAgentsDisable, true);
     }
 
-    public void BI_UpdateState(ArrayList<Agent> listAgentsEnable, ArrayList<Agent> listAgentsDisable,
-            Boolean enabBoolean) {
+    public void BI_UpdateState(List<Agent> listAgentsEnable, List<Agent> listAgentsDisable,
+            boolean enabBoolean) {
         // if (Objects.nonNull(enabBoolean)){
-        ArrayList<Agent> listAgents = enabBoolean ? listAgentsEnable : listAgentsDisable;
+        List<Agent> listAgents = enabBoolean ? listAgentsEnable : listAgentsDisable;
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setConversationId(DF_HELPER.IC_UPDATE_AGENT_STATE);
         msg.setContent(Boolean.toString(enabBoolean));
@@ -130,7 +129,7 @@ public class Administrator extends Agent {
         this.addBehaviour(new AchieveREInitiator(this, msg) {
             @Override
             protected void handleAllResultNotifications(Vector notifications) {
-                System.out.println("Llegaron todos los mensajes");
+                DF_HELPER.println(myAgent, "Todos los agentes realizaron la actualización de su estado");
             }
 
             @Override
@@ -139,129 +138,69 @@ public class Administrator extends Agent {
                 if (enabBoolean) {
                     BI_UpdateState(listAgentsEnable, listAgentsDisable, false);
                 } else {
-                    BI_InitializeSimulation(null);
+                    BI_InitializeSimulation();
                 }
                 return 0;
             }
         });
     }
 
-    public void BI_InitializeSimulation(Integer numAgentInitializator) {
-        final AtomicInteger finalNumAgentInitializator = new AtomicInteger(
-                Objects.isNull(numAgentInitializator) ? 0 : numAgentInitializator);
+    public void BI_InitializeSimulation() {
         Agent agente = DF_HELPER.getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG)
-                .get(finalNumAgentInitializator.get());
+                .get(0);
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-        if (!first) {
-            currExecutionTime = currExecutionTime + ParametersConfig.ADD_TIME_EXECUTION;
+        if (this.currCreationScenarioConfig.getnCurrIterations() == 0) {
+            currExecutionTime = 0;
+        } else {
+            currExecutionTime += 300000;
         }
         msg.setConversationId(DF_HELPER.IC_INITIALIZE_SIMULATION);
         msg.addReceiver(agente.getAID());
-        msg.setContent(Integer.toString((int) currExecutionTime));
+        msg.setContent(Long.toString((long) currExecutionTime));
+        currCreationScenarioConfig.addNCurrIteration();
         this.addBehaviour(new AchieveREInitiator(this, msg) {
             @Override
             protected void handleAgree(ACLMessage agree) {
-                System.out.println(
-                        "Iniciador: Llega mensaje en que hay un lugar de acopio habilitado para comenzar la cadena de suministros");
+                DF_HELPER.println(myAgent, "Llega mensaje que comienza la gestión de cadena de suministros");
             }
 
             @Override
             protected void handleRefuse(ACLMessage refuse) {
-                System.out.println(finalNumAgentInitializator.incrementAndGet());
-                if (finalNumAgentInitializator.get() < DF_HELPER.getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG)
-                        .size()) {
-                    BI_InitializeSimulation(finalNumAgentInitializator.get());
-                } else {
-                    System.out.println("No hay lugares de acopio disponibles");
-                    F_UpdateState();
-                }
+                DF_HELPER.println(myAgent, "NO HAY LUGARES DE ACOPIO DISPONIBLES");
+                System.exit(0);
             }
-
-            // protected void handleFailure(ACLMessage failure) {
-            // System.out.println("Iniciador: Mensaje FAILURE recibido del Responder");
-            // }
-
-            // protected void handleNotUnderstood(ACLMessage notUnderstood) {
-            // System.out.println("Iniciador: Mensaje NOT_UNDERSTOOD recibido del
-            // Responder");
-            // }
-
-            // protected void handleOutOfSequence(ACLMessage msg) {
-            // System.out.println("Iniciador: Mensaje OUT_OF_SEQUENCE recibido del
-            // Responder");
-            // }
-
-            // protected void handleAllResponses(Vector responses) {
-            // System.out.println("Iniciador: Todas las respuestas recibidas del
-            // Responder");
-            // // Realizar alguna acción después de recibir todas las respuestas
-            // // ...
-            // }
-
-            // protected void handleAllResultNotifications(Vector resultNotifications) {
-            // System.out.println("Iniciador: Todas las notificaciones de resultado
-            // recibidas del Responder");
-            // // Realizar alguna acción después de recibir todas las notificaciones de
-            // // resultado
-            // // ...
-            // }
         });
-
-        // this.addBehaviour(new AchieveREInitiator(this, msg) {
-        // protected void handleInform(ACLMessage inform) {
-        // System.out.println("Iniciador: Mensaje de respuesta recibido del receptor");
-        // // Enviar la confirmación al receptor
-        // ACLMessage confirmacion = inform.createReply();
-        // confirmacion.setPerformative(ACLMessage.CONFIRM);
-        // send(confirmacion);
-        // }
-
-        // @Override
-        // protected void handleAgree(ACLMessage agree) {
-        // System.out.println("----Recibe mensaje que inicia la simulación----");
-        // ACLMessage confirmacion = agree.createReply();
-        // confirmacion.setPerformative(ACLMessage.CONFIRM);
-        // send(confirmacion);
-        // }
-
-        // @Override
-        // protected void handleRefuse(ACLMessage refuse) {
-        // System.out.println(finalNumAgentInitializator.incrementAndGet());
-        // if (finalNumAgentInitializator.get() <
-        // DF_HELPER.getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG)
-        // .size()) {
-        // BI_InitializeSimulation(finalNumAgentInitializator.get());
-        // } else {
-        // System.out.println("No hay lugares de acopio disponibles");
-        // F_UpdateState();
-        // }
-        // }
-        // });
-
     }
 
     public void BR_EndSimulation() {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_END_SIMULATION));
-
-        this.addBehaviour(new AchieveREResponder(this, template) {
-            @Override
-            protected ACLMessage prepareResponse(ACLMessage request) {
-                return null; // No se envía ninguna respuesta al mensaje de solicitud
-            }
-
-            @Override
-            protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
-                System.out.println("Se recibe mensaje de fin de simulación");
-                // No se retorna ningún mensaje de notificación como resultado
+        this.addBehaviour(new ContractNetResponder(this, template) {
+            protected ACLMessage handleCfp(ACLMessage cfp) {
+                String jsonContent = cfp.getContent();
+                ArrayList<SupplyActivity> supplyActivitiesList = getSupplyActivitiesList();
+                ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new ArrayList<>(Arrays
+                        .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
+                supplyActivitiesList.addAll(supplyActivitiesListResponseArrayList);
+                CreationScenarioConfig currCreationScenario = getCurrCreationScenarioConfig();
+                if (currCreationScenario.getIterationsPending()) {
+                    DF_HELPER.println("SIGUIENTE ITERACION");
+                    BI_InitializeSimulation();
+                } else {
+                    currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
+                    CreationScenarioConfig nextCreationScenario = ScenarioConfig
+                            .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
+                    if (Objects.nonNull(nextCreationScenario)) {
+                        DF_HELPER.println("SIGUIENTE ESCENARIO");
+                        setCurrCreationScenarioConfig(nextCreationScenario);
+                        F_UpdateState();
+                    } else {
+                        DF_HELPER.println("NO QUEDAN MAS ESCENARIO");
+                        F_PrintResults();
+                    }
+                }
                 return null;
             }
-            // protected void handleInform(ACLMessage inform) {
-            // System.out.println("NotificationResponderAgent: INFORM received from " +
-            // inform.getSender().getName());
-            // System.out.println("Content: " + inform.getContent());
-            // // Aquí puedes implementar la lógica para procesar la notificación recibida
-            // }
         });
     }
 
@@ -307,6 +246,13 @@ public class Administrator extends Agent {
             }
 
         });
+    }
+
+    public void F_PrintResults() {
+        DF_HELPER.println("PRINT RESULTS");
+        FileGenerator fileteGenerator = new FileGenerator();
+        fileteGenerator.generateFile(supplyActivitiesList);
+        System.exit(0);
     }
 
     public void crearAgentesTransporte() {
@@ -375,7 +321,8 @@ public class Administrator extends Agent {
                                 + Integer.toString(j);
                         configObject.getContainerController()
                                 .createNewAgent(nameTruck, configObject.getClassRoute(),
-                                        new Object[] { carrierName, initialUbicationLat, initialUbicationLon, capacity })
+                                        new Object[] { carrierName, initialUbicationLat, initialUbicationLon,
+                                                capacity })
                                 .start();
                     }
                 }
@@ -467,5 +414,33 @@ public class Administrator extends Agent {
         } catch (IOException | CsvException | StaleProxyException e) {
             e.printStackTrace();
         }
+    }
+
+    public DFHelper getDF_HELPER() {
+        return DF_HELPER;
+    }
+
+    public long getCurrExecutionTime() {
+        return currExecutionTime;
+    }
+
+    public void setCurrExecutionTime(long currExecutionTime) {
+        this.currExecutionTime = currExecutionTime;
+    }
+
+    public boolean isFirst() {
+        return first;
+    }
+
+    public void setFirst(boolean first) {
+        this.first = first;
+    }
+
+    public CreationScenarioConfig getCurrCreationScenarioConfig() {
+        return currCreationScenarioConfig;
+    }
+
+    public void setCurrCreationScenarioConfig(CreationScenarioConfig currCreationScenarioConfig) {
+        this.currCreationScenarioConfig = currCreationScenarioConfig;
     }
 }

@@ -18,6 +18,7 @@ import src.models.SupplyActivityProposed;
 import src.models.SupplyActivityTransportation;
 import src.models.SupplyActivityRequired;
 import src.models.SupplyActivityOrder;
+import src.commons.ParametersConfig;
 import src.models.SupplyActivity;
 import src.models.TransportationActivity;
 import src.models.TransportationActivityItinerary;
@@ -25,12 +26,12 @@ import src.models.Ubication;
 
 public class Truck extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
-    String IdCamion, PuntoInicial, NameTransportista;
-    long VelocidadVacio, VelocidadCargado, DuracionDescargas, TiempoOperacion, TotalTransportado,
+    private String IdCamion, PuntoInicial, NameTransportista;
+    private long VelocidadVacio, VelocidadCargado, DuracionDescargas, TiempoOperacion, TotalTransportado,
             DuracionTotalViaje, DuracionAculatamiento;
-    Integer Capacidad;
-    ArrayList<TransportationActivity> listTransportationActivities = new ArrayList<>();
-    ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
+    private Integer Capacidad;
+    private ArrayList<TransportationActivity> listTransportationActivities = new ArrayList<>();
+    private ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
 
     public long getCapacidad() {
         return Capacidad;
@@ -140,47 +141,41 @@ public class Truck extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_REQUEST_FREIGHT));
         this.addBehaviour(new ContractNetResponder(this, template) {
+            ArrayList<SupplyActivityOrder> listSupplyActivities = getListSupplyActivities();
+
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
-                // System.out.println("ResponderAgent: CFP received from InitiatorAgent: " +
-                // cfp.getSender().getName());
                 ACLMessage reply = cfp.createReply();
                 if (getEnabled()) {
                     if (searchRoute()) {
-                        if (getTransportationActivityItinerary().isEmpty()) {
-                            SupplyActivity requiredSupply = (SupplyActivity) new Gson()
-                                    .fromJson(cfp.getContent(), SupplyActivity.class);
-                            long tiempoViajeCarga = getTravelTime(getUbication(),
-                                    requiredSupply.getSupplyActivityProposed().getUbicacion());
-                            long tiempoViajeDescarga = getTravelTime(
-                                    requiredSupply.getSupplyActivityRequired().getUbicacion(),
-                                    getUbication());
-                            Integer cantidadCarga = getMaxLoad((int) getCapacidad(),
-                                    requiredSupply.getSupplyActivityProposed().getMaterialStock().getTotal());
-                            long horaInicioDisponible = 0;
-                            if (!listSupplyActivities.isEmpty()) {
-                                horaInicioDisponible = 999;
-                                System.out.println("Pasó la primera iteración");
-                                System.exit(0);
-                            }
-                            long horaInicioCarga = getInitTime(
-                                    requiredSupply.getSupplyActivityRequired().getHoraRequerida(), horaInicioDisponible,
-                                    tiempoViajeCarga);
+                        // if (this.listSupplyActivities.isEmpty()) {
+                        SupplyActivity supplyActivity = (SupplyActivity) new Gson()
+                                .fromJson(cfp.getContent(), SupplyActivity.class);
+                        long tiempoViajeCarga = getTravelTime(getUbication(),
+                                supplyActivity.getSupplyActivityProposed().getUbicacion());
+                        long tiempoViajeDescarga = getTravelTime(
+                                supplyActivity.getSupplyActivityRequired().getUbicacion(),
+                                getUbication());
+                        Integer cantidadCarga = getMaxLoad((int) getCapacidad(),
+                                supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelp());
+                        long horaInicioDisponible = getEnabledActivityTime(
+                                supplyActivity.getSupplyActivityRequired().getHoraRequerida(), tiempoViajeCarga);
+                        if (ParametersConfig.ERROR_LONG != horaInicioDisponible) {
                             SupplyActivityTransportation proposedTransportationActivity = new SupplyActivityTransportation(
-                                    horaInicioCarga, tiempoViajeCarga, tiempoViajeDescarga,
-                                    this.getAgent().getLocalName(),
-                                    cantidadCarga);
-                            reply.setPerformative(ACLMessage.PROPOSE);
+                                    horaInicioDisponible,
+                                    tiempoViajeCarga, tiempoViajeDescarga, this.getAgent().getLocalName(),
+                                    cantidadCarga,
+                                    supplyActivity.getSupplyActivityProposed().getAgentName(),
+                                    supplyActivity.getSupplyActivityRequired().getAgentName());
                             reply.setContent(new Gson().toJson(proposedTransportationActivity));
-
+                            reply.setPerformative(ACLMessage.PROPOSE);
                         } else {
-                            System.out.println("Not empty");
+                            reply.setPerformative(ACLMessage.REFUSE);
                         }
-                        // reply.setPerformative(ACLMessage.PROPOSE);
-                        // ProposedTransportationActivity proposedTransportation = new
-                        // ProposedTransportationActivity(
-                        // new Random().nextInt(100), this.myAgent.getLocalName());
-                        // reply.setContent(new Gson().toJson(proposedTransportation));
+                        // } else {
+                        // System.out.println("EL TRUCK YA TIENE ALGUNA ACTIVIDAD, DEBE TRABAJARLA");
+                        // System.exit(0);
+                        // }
                     } else {
                         reply.setPerformative(ACLMessage.REFUSE);
                     }
@@ -224,9 +219,10 @@ public class Truck extends Agent {
         return random.nextBoolean();
     }
 
-    public static long getInitTime(long l, long tiempoInicioDisponible, long tiempoViajeCarga) {
-        return Math.max(l, tiempoInicioDisponible + tiempoViajeCarga);
-    }
+    // public static long getInitTime(long l, long tiempoInicioDisponible, long
+    // tiempoViajeCarga) {
+    // return Math.max(l, tiempoInicioDisponible + tiempoViajeCarga);
+    // }
 
     public static long getTravelTime(Ubication supplyActivityUbication, Ubication proposedActivityUbication) {
         // Radio medio de la Tierra en kilómetros
@@ -254,11 +250,6 @@ public class Truck extends Agent {
         return tiempoEnMilisegundos;
     }
 
-    public static long getCapacityAvailable(SupplyActivityProposed proposedSupplyActivity) {
-        return proposedSupplyActivity.getMaterialStock().getCantidadTotal();
-
-    }
-
     public static int getMaxLoad(int capacidadCamion, int pesoCargar) {
         if (capacidadCamion <= 0 || pesoCargar <= 0) {
             return 0;
@@ -267,6 +258,112 @@ public class Truck extends Agent {
         int cargaMaxima = Math.min(capacidadCamion, pesoCargar);
 
         return cargaMaxima;
+    }
+
+    public DFHelper getDF_HELPER() {
+        return DF_HELPER;
+    }
+
+    public String getIdCamion() {
+        return IdCamion;
+    }
+
+    public void setIdCamion(String idCamion) {
+        IdCamion = idCamion;
+    }
+
+    public String getPuntoInicial() {
+        return PuntoInicial;
+    }
+
+    public void setPuntoInicial(String puntoInicial) {
+        PuntoInicial = puntoInicial;
+    }
+
+    public long getVelocidadVacio() {
+        return VelocidadVacio;
+    }
+
+    public void setVelocidadVacio(long velocidadVacio) {
+        VelocidadVacio = velocidadVacio;
+    }
+
+    public long getVelocidadCargado() {
+        return VelocidadCargado;
+    }
+
+    public void setVelocidadCargado(long velocidadCargado) {
+        VelocidadCargado = velocidadCargado;
+    }
+
+    public long getDuracionDescargas() {
+        return DuracionDescargas;
+    }
+
+    public void setDuracionDescargas(long duracionDescargas) {
+        DuracionDescargas = duracionDescargas;
+    }
+
+    public long getTiempoOperacion() {
+        return TiempoOperacion;
+    }
+
+    public void setTiempoOperacion(long tiempoOperacion) {
+        TiempoOperacion = tiempoOperacion;
+    }
+
+    public long getTotalTransportado() {
+        return TotalTransportado;
+    }
+
+    public void setTotalTransportado(long totalTransportado) {
+        TotalTransportado = totalTransportado;
+    }
+
+    public long getDuracionTotalViaje() {
+        return DuracionTotalViaje;
+    }
+
+    public void setDuracionTotalViaje(long duracionTotalViaje) {
+        DuracionTotalViaje = duracionTotalViaje;
+    }
+
+    public long getDuracionAculatamiento() {
+        return DuracionAculatamiento;
+    }
+
+    public void setDuracionAculatamiento(long duracionAculatamiento) {
+        DuracionAculatamiento = duracionAculatamiento;
+    }
+
+    public ArrayList<TransportationActivity> getListTransportationActivities() {
+        return listTransportationActivities;
+    }
+
+    public void setListTransportationActivities(ArrayList<TransportationActivity> listTransportationActivities) {
+        this.listTransportationActivities = listTransportationActivities;
+    }
+
+    public ArrayList<SupplyActivityOrder> getListSupplyActivities() {
+        return listSupplyActivities;
+    }
+
+    public void setListSupplyActivities(ArrayList<SupplyActivityOrder> listSupplyActivities) {
+        this.listSupplyActivities = listSupplyActivities;
+    }
+
+    public long getEnabledActivityTime(long timeRequired, long tiempoViajeCarga) {
+        if (!this.listSupplyActivities.isEmpty()) {
+            SupplyActivityOrder supplyActivityOrder = this.listSupplyActivities
+                    .get(this.listSupplyActivities.size() - 1);
+            if (timeRequired <= supplyActivityOrder.getHoraFinDescarga()) {
+                return ParametersConfig.ERROR_LONG;
+            } else {
+                return Math.max(timeRequired, supplyActivityOrder.getHoraFinDescarga() + tiempoViajeCarga);
+            }
+        } else {
+            return timeRequired;
+        }
     }
 
 }

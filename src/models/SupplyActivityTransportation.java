@@ -3,33 +3,151 @@ package src.models;
 import com.google.gson.Gson;
 
 public class SupplyActivityTransportation implements Cloneable {
-    Long horaInicio, tiempoViajeCarga, horaInicioCarga;
+    long horaInicioViajeCarga, tiempoViajeCarga, horaFinViajeCarga, horaInicioCarga, tiempoCarga, horaFinCarga;
+    long horaInicioViajeDescarga, tiempoViajeDescarga, horaFinViajeDescarga, horaInicioDescarga, tiempoDescarga,
+            horaFinDescarga;
     String puntoCarga;
-    Long horaFin, tiempoViajeDescarga, horaInicioDescarga;
     String puntoDescarga;
-    // Long tiempoDemora;
     String agentName;
     Integer cantidadTrasladada;
 
+
     public SupplyActivityTransportation(Long tiempoInicioActividad, Long tiempoViajeCarga,
-            Long tiempoViajeDescarga, String agentName, Integer cantidadTrasladada) {
-        this.horaInicio = tiempoInicioActividad - tiempoViajeCarga;
+            Long tiempoViajeDescarga, String agentName, Integer cantidadTrasladada, String puntoCarga, String puntoDescarga) {
+        this.horaInicioViajeCarga = tiempoInicioActividad;
         this.tiempoViajeCarga = tiempoViajeCarga;
-        this.horaInicioCarga = this.horaInicio + this.tiempoViajeCarga;
+        this.horaFinViajeCarga = this.horaInicioViajeCarga + this.tiempoViajeCarga;
+        this.horaInicioCarga = this.horaFinViajeCarga;
+        this.tiempoCarga = cantidadTrasladada * 2000;
+        this.horaFinCarga = this.horaInicioCarga + this.tiempoCarga;
+        this.horaInicioViajeDescarga = this.horaFinCarga;
         this.tiempoViajeDescarga = tiempoViajeDescarga;
-        this.horaFin = tiempoInicioActividad + tiempoViajeDescarga;
+        this.horaFinViajeDescarga = this.horaFinCarga + tiempoViajeDescarga;
+        this.horaInicioDescarga = this.horaFinViajeDescarga;
+        this.tiempoDescarga = cantidadTrasladada * 1000;
+        this.horaFinDescarga = this.horaInicioDescarga + this.tiempoDescarga;
+        this.puntoCarga = puntoCarga;
+        this.puntoDescarga = puntoDescarga;
         this.agentName = agentName;
         this.cantidadTrasladada = cantidadTrasladada;
     }
 
-    
-
-    public Integer getCantidadTrasladada() {
-        return cantidadTrasladada;
+    @Override
+    public String toString() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 
-    public void setCantidadTrasladada(Integer cantidadCarga) {
-        this.cantidadTrasladada = cantidadCarga;
+    public long getHoraInicioViajeCarga() {
+        return horaInicioViajeCarga;
+    }
+
+    public void setHoraInicioViajeCarga(long horaInicioViajeCarga) {
+        this.horaInicioViajeCarga = horaInicioViajeCarga;
+    }
+
+    public long getTiempoViajeCarga() {
+        return tiempoViajeCarga;
+    }
+
+    public void setTiempoViajeCarga(long tiempoViajeCarga) {
+        this.tiempoViajeCarga = tiempoViajeCarga;
+    }
+
+    public long getHoraFinViajeCarga() {
+        return horaFinViajeCarga;
+    }
+
+    public void setHoraFinViajeCarga(long horaFinViajeCarga) {
+        this.horaFinViajeCarga = horaFinViajeCarga;
+    }
+
+    public long getHoraInicioCarga() {
+        return horaInicioCarga;
+    }
+
+    public void setHoraInicioCarga(long horaInicioCarga) {
+        this.horaInicioCarga = horaInicioCarga;
+    }
+
+    public long getTiempoCarga() {
+        return tiempoCarga;
+    }
+
+    public void setTiempoCarga(long tiempoCarga) {
+        this.tiempoCarga = tiempoCarga;
+    }
+
+    public long getHoraFinCarga() {
+        return horaFinCarga;
+    }
+
+    public void setHoraFinCarga(long horaFinCarga) {
+        this.horaFinCarga = horaFinCarga;
+    }
+
+    public long getHoraInicioViajeDescarga() {
+        return horaInicioViajeDescarga;
+    }
+
+    public void setHoraInicioViajeDescarga(long horaInicioViajeDescarga) {
+        this.horaInicioViajeDescarga = horaInicioViajeDescarga;
+    }
+
+    public long getTiempoViajeDescarga() {
+        return tiempoViajeDescarga;
+    }
+
+    public void setTiempoViajeDescarga(long tiempoViajeDescarga) {
+        this.tiempoViajeDescarga = tiempoViajeDescarga;
+    }
+
+    public long getHoraFinViajeDescarga() {
+        return horaFinViajeDescarga;
+    }
+
+    public void setHoraFinViajeDescarga(long horaFinViajeDescarga) {
+        this.horaFinViajeDescarga = horaFinViajeDescarga;
+    }
+
+    public long getHoraInicioDescarga() {
+        return horaInicioDescarga;
+    }
+
+    public void setHoraInicioDescarga(long horaInicioDescarga) {
+        this.horaInicioDescarga = horaInicioDescarga;
+    }
+
+    public long getTiempoDescarga() {
+        return tiempoDescarga;
+    }
+
+    public void setTiempoDescarga(long tiempoDescarga) {
+        this.tiempoDescarga = tiempoDescarga;
+    }
+
+    public long getHoraFinDescarga() {
+        return horaFinDescarga;
+    }
+
+    public void setHoraFinDescarga(long horaFinDescarga) {
+        this.horaFinDescarga = horaFinDescarga;
+    }
+
+    public String getPuntoCarga() {
+        return puntoCarga;
+    }
+
+    public void setPuntoCarga(String puntoCarga) {
+        this.puntoCarga = puntoCarga;
+    }
+
+    public String getPuntoDescarga() {
+        return puntoDescarga;
+    }
+
+    public void setPuntoDescarga(String puntoDescarga) {
+        this.puntoDescarga = puntoDescarga;
     }
 
     public String getAgentName() {
@@ -40,90 +158,13 @@ public class SupplyActivityTransportation implements Cloneable {
         this.agentName = agentName;
     }
 
-    @Override
-    public String toString() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
+    public Integer getCantidadTrasladada() {
+        return cantidadTrasladada;
     }
 
-    public Long getHoraInicio() {
-        return horaInicio;
+    public void setCantidadTrasladada(Integer cantidadTrasladada) {
+        this.cantidadTrasladada = cantidadTrasladada;
     }
 
-    public void setHoraInicio(Long tiempoInicio) {
-        this.horaInicio = tiempoInicio;
-    }
-
-    public Long getHoraFin() {
-        return horaFin;
-    }
-
-    public void setHoraFin(Long tiempoFin) {
-        this.horaFin = tiempoFin;
-    }
-
-    public Long getTiempoViajeCarga() {
-        return tiempoViajeCarga;
-    }
-
-    public void setTiempoViajeCarga(Long tiempoViajeCarga) {
-        this.tiempoViajeCarga = tiempoViajeCarga;
-    }
-
-    public Long getTiempoViajeDescarga() {
-        return tiempoViajeDescarga;
-    }
-
-    public void setTiempoViajeDescarga(Long tiempoViajeDescarga) {
-        this.tiempoViajeDescarga = tiempoViajeDescarga;
-    }
-
-
-
-    public Long getHoraInicioCarga() {
-        return horaInicioCarga;
-    }
-
-
-
-    public void setHoraInicioCarga(Long horaInicioCarga) {
-        this.horaInicioCarga = horaInicioCarga;
-    }
-
-
-
-    public String getPuntoCarga() {
-        return puntoCarga;
-    }
-
-
-
-    public void setPuntoCarga(String puntoCarga) {
-        this.puntoCarga = puntoCarga;
-    }
-
-
-
-    public Long getHoraInicioDescarga() {
-        return horaInicioDescarga;
-    }
-
-
-
-    public void setHoraInicioDescarga(Long horaInicioDescarga) {
-        this.horaInicioDescarga = horaInicioDescarga;
-    }
-
-
-
-    public String getPuntoDescarga() {
-        return puntoDescarga;
-    }
-
-
-
-    public void setPuntoDescarga(String puntoDescarga) {
-        this.puntoDescarga = puntoDescarga;
-    }
-
+    
 }

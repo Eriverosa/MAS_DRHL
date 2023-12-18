@@ -1,8 +1,13 @@
 package src.services;
 
 import jade.core.Runtime;
+import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import src.commons.AgentConfig;
+import src.modelsAgents.Truck;
+import jade.core.AID;
+import jade.core.AgentContainer;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 
@@ -11,12 +16,32 @@ public class Main {
         Profile p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
         p.setParameter(Profile.GUI, "false");
-        Runtime.instance().createMainContainer(p);
-        AgentConfig.CreationAgentConfig agentConfig = AgentConfig.ADMINISTRATOR_CONFIG;
-        agentConfig.getContainerController()
-                .createNewAgent("Administrator", agentConfig.getClassRoute(), new Object[] {}).start();
+        boolean test = false;
+        if (test) {
+            // Profile myProfile = new ProfileImpl();
+            // myProfile.setParameter(Profile.MAIN_HOST, "localhost");
+            // myProfile.setParameter(Profile.GUI, "false");
+
+            // Obtener el contenedor principal
+            ContainerController mainContainer = Runtime.instance().createMainContainer(p);
+            mainContainer.createNewAgent("Iniciador",
+                    "src.modelsAgents.ContractNetInitiatorAgent",
+                    new Object[] {}).start();
+            for (int i = 0; i < 1; i++) {
+                mainContainer.createNewAgent("Responder_" + i,
+                        "src.modelsAgents.ContractNetResponderAgent",
+                        new Object[] {}).start();
+            }
+
+        } else {
+
+            Runtime.instance().createMainContainer(p);
+
+            AgentConfig.CreationAgentConfig agentConfig = AgentConfig.ADMINISTRATOR_CONFIG;
+            agentConfig.getContainerController()
+                    .createNewAgent("Administrator", agentConfig.getClassRoute(), new Object[] {}).start();
+        }
     }
 
     
-
 }

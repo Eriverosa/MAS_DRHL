@@ -46,7 +46,7 @@ public class MaterialStock {
         this.getMaterialStock().add(new Stock(20000, new Random().nextInt(100)));
     }
 
-    public Integer getTotalByPerson() {
+    public Integer getTotalAmountHelpByPerson() {
         Integer totalQuantity = 0;
         for (Stock stock : this.getMaterialStock()) {
             totalQuantity += ((stock.getTamanho() * stock.getCantidad()) / ParametersConfig.AMOUNT_BY_PERSON_CC);
@@ -54,7 +54,7 @@ public class MaterialStock {
         return totalQuantity;
     }
 
-    public Integer getTotal() {
+    public Integer getTotalAmountHelp() {
         Integer totalQuantity = 0;
         for (Stock stock : this.getMaterialStock()) {
             totalQuantity += (stock.getTamanho() * stock.getCantidad());
@@ -91,13 +91,13 @@ public class MaterialStock {
         return gson.toJson(this);
     }
 
-    public int getCantidadTotal() {
-        int totalMateriales = 0;
-        for (Stock material : materialStock) {
-            totalMateriales += material.getCantidad();
-        }
-        return totalMateriales;
-    }
+    // public int getCantidadTotal() {
+    //     int totalMateriales = 0;
+    //     for (Stock material : materialStock) {
+    //         totalMateriales += material.getCantidad();
+    //     }
+    //     return totalMateriales;
+    // }
 
     @Override
     public MaterialStock clone() {
@@ -214,7 +214,7 @@ public class MaterialStock {
         return false; // No se encontró una solución
     }
 
-    public void updateMaterialStock(MaterialStock addStock) {
+    public void addMaterialStock(MaterialStock addStock) {
         for (Stock stock : addStock.getMaterialStock().stream().filter(elemento -> elemento.getCantidad() > 0)
                 .collect(Collectors.toList())) {
             Stock stockEncontrado = this.getMaterialStock().stream()
@@ -222,6 +222,18 @@ public class MaterialStock {
                     .findFirst()
                     .orElse(null);
             int newStock = stockEncontrado.getCantidad() + stock.getCantidad();
+            stockEncontrado.setCantidad(newStock);
+        }
+    }
+
+    public void removeMaterialStock(MaterialStock addStock) {
+        for (Stock stock : addStock.getMaterialStock().stream().filter(elemento -> elemento.getCantidad() > 0)
+                .collect(Collectors.toList())) {
+            Stock stockEncontrado = this.getMaterialStock().stream()
+                    .filter(elemento -> elemento.getTamanho().equals(stock.getTamanho()))
+                    .findFirst()
+                    .orElse(null);
+            int newStock = stockEncontrado.getCantidad() - stock.getCantidad();
             stockEncontrado.setCantidad(newStock);
         }
     }

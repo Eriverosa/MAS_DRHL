@@ -45,7 +45,6 @@ public class DFHelper extends Agent {
     public final String IC_REGISTER_TO_CARRIER = "ID_CONVERSATION_REGISTER_TO_CARRIER";
     public final String IC_CONFIRM_SUPPLY_ACTIVITY = "ID_CONVERSATION_CONFIRM_SUPPLY_ACTIVITY";
 
-
     public Agent getRegisteredAdministrador() {
         return LIST_REGISTERED_ADMINISTRATOR.get(0);
     }
@@ -112,20 +111,20 @@ public class DFHelper extends Agent {
         Agent targetAgent = listaAgentes.stream()
                 .filter(agent -> agent.getLocalName().equals(name))
                 .findFirst()
-                .orElse(null);  
+                .orElse(null);
         return Objects.nonNull(targetAgent) ? targetAgent : null;
         // if (Objects.isNull(targetAgent)){
-        //     targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
-        //         .filter(agent -> agent.getLocalName().equals(name))
-        //         .findFirst()
-        //         .orElse(null);    
+        // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
+        // .filter(agent -> agent.getLocalName().equals(name))
+        // .findFirst()
+        // .orElse(null);
         // }
         // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
-        //         .filter(agent -> agent.getLocalName().equals(name))
-        //         .findFirst()
-        //         .orElse(null);
+        // .filter(agent -> agent.getLocalName().equals(name))
+        // .findFirst()
+        // .orElse(null);
         // if (Objects.nonNull(targetAgent)) {
-        //     return targetAgent.getAID();
+        // return targetAgent.getAID();
         // }
         // return null;
     }
@@ -339,6 +338,9 @@ public class DFHelper extends Agent {
             case ACLMessage.REJECT_PROPOSAL:
                 performativeString = "REJECT_PROPOSAL";
                 break;
+            case ACLMessage.AGREE:
+                performativeString = "AGREE";
+                break;
             // Add other cases for different performative types...
             default:
                 performativeString = "UNKNOWN";
@@ -346,6 +348,14 @@ public class DFHelper extends Agent {
         }
         System.out.println(agente.getLocalName() + ": " + performativeString + " message received from "
                 + message.getSender().getLocalName() + " with conversationId " + message.getConversationId());
+    }
+
+    public void println(Agent agente, String message) {
+        System.out.println(agente.getLocalName() + ": " + message);
+    }
+
+    public void println(String message) {
+        System.out.println("----- " + message + " -----");
     }
 
 }

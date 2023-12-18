@@ -49,7 +49,7 @@ public class SupplyActivity {
         return supplyActivityOrder;
     }
 
-    public void setSupplyActivityOrder() {
+    public void generateSupplyActivityOrder() {
         this.supplyActivityOrder = new SupplyActivityOrder(this);
     }
 

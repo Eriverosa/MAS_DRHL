@@ -27,6 +27,7 @@ public class Donor extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     private Boolean enabled;
     private MaterialStock materialStock;
+    private MaterialStock materialStockReserved;
     private Ubication ubication;
     private ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
 
@@ -54,6 +55,9 @@ public class Donor extends Agent {
                         Integer.parseInt((String) listaArgumentos.get(3)),
                         Integer.parseInt((String) listaArgumentos.get(2))));
         this.setMaterialStock(new MaterialStock(listStockMaterial));
+        this.setMaterialStockReserved(new MaterialStock());
+        System.out.println(this.getMaterialStock());
+        System.out.println("this.getMaterialStock()");
     }
 
     public Boolean getEnabled() {
@@ -83,18 +87,21 @@ public class Donor extends Agent {
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_PROPOSED_SUPPLY));
 
         this.addBehaviour(new ContractNetResponder(this, template) {
+            MaterialStock materialStock;
+
             protected ACLMessage handleCfp(ACLMessage cfp) {
-                // getMaterialStock().repartirOptimizado(Integer.parseInt(cfp.getContent()));
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
                 if (getEnabled()) {
+                    this.materialStock = getMaterialStock();
                     SupplyActivityRequired requiredSupply = (SupplyActivityRequired) new Gson()
                             .fromJson(cfp.getContent(), SupplyActivityRequired.class).clone();
-                    MaterialStock materialStock = getMaterialStock()
+                    MaterialStock materialStockSupply = this.materialStock
                             .getOptimeCombination(requiredSupply.getCantidadPersonas());
-                    SupplyActivityProposed proposedSupply = new SupplyActivityProposed(materialStock, getUbication(),
+                    SupplyActivityProposed proposedSupply = new SupplyActivityProposed(materialStockSupply,
+                            getUbication(),
                             this.getAgent().getLocalName());
-                    if (proposedSupply.getMaterialStock().getCantidadTotal() > 0) {
+                    if (proposedSupply.getMaterialStock().getTotalAmountHelp() > 0) {
                         reply.setPerformative(ACLMessage.PROPOSE);
                         reply.setContent(new Gson().toJson(proposedSupply));
                     } else {
@@ -107,17 +114,18 @@ public class Donor extends Agent {
             }
 
             protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
-                System.out.println("ResponderAgent: ACCEPT_PROPOSAL received from InitiatorAgent: "
-                        + accept.getSender().getName());
+                DF_HELPER.println(this.getAgent(), accept);
                 ACLMessage reply = accept.createReply();
                 reply.setPerformative(ACLMessage.INFORM);
-                reply.setContent("Proposal accepted!");
+                // reply.setContent("Proposal accepted!");
                 return reply;
             }
 
             protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
-                System.out.println("ResponderAgent: REJECT_PROPOSAL received from InitiatorAgent: "
-                        + reject.getSender().getName());
+                DF_HELPER.println(this.getAgent(), reject);
+                // System.out.println("ResponderAgent: REJECT_PROPOSAL received from
+                // InitiatorAgent: "
+                // + reject.getSender().getName());
             }
         });
     }
@@ -125,12 +133,13 @@ public class Donor extends Agent {
     public void BR_ConfirmSupplyActivity() {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY));
-
         this.addBehaviour(new AchieveREResponder(this, template) {
             protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
                 SupplyActivity requiredSupply = (SupplyActivity) new Gson()
                         .fromJson(request.getContent(), SupplyActivity.class);
                 listSupplyActivities.add(new SupplyActivityOrder(requiredSupply));
+                materialStock.removeMaterialStock(requiredSupply.getSupplyActivityOrder().getMaterialStock());
+                materialStockReserved.addMaterialStock(requiredSupply.getSupplyActivityOrder().getMaterialStock());
                 DF_HELPER.println(this.myAgent, request);
                 return request.createReply();
             }
@@ -163,5 +172,13 @@ public class Donor extends Agent {
 
     public void setListSupplyActivities(ArrayList<SupplyActivityOrder> listSupplyActivities) {
         this.listSupplyActivities = listSupplyActivities;
+    }
+
+    public MaterialStock getMaterialStockReserved() {
+        return materialStockReserved;
+    }
+
+    public void setMaterialStockReserved(MaterialStock materialStockReserved) {
+        this.materialStockReserved = materialStockReserved;
     }
 }

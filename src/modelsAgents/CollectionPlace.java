@@ -7,7 +7,10 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Vector;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -19,6 +22,7 @@ import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetInitiator;
 import src.commons.AgentConfig;
+import src.commons.FileGenerator;
 import src.models.MaterialStock;
 import src.models.SupplyActivityProposed;
 import src.models.SupplyActivityTransportation;
@@ -35,6 +39,7 @@ public class CollectionPlace extends Agent {
     private Ubication ubication;
     private SupplyActivity supplyActivity;
     private ArrayList<SupplyActivity> pendingSupplyActivityList;
+    private ArrayList<SupplyActivity> supplyActivitiesList = new ArrayList<>();
     private long initTime;
     // private RequiredSupply requiredSupply;
     // private ProposedSupply proposedSupply;
@@ -100,16 +105,16 @@ public class CollectionPlace extends Agent {
 
         this.addBehaviour(new AchieveREResponder(this, template) {
             protected ACLMessage handleRequest(ACLMessage request) {
-                // System.out.println("ResponderAgent: REQUEST recibido del Initiator");
-                System.out.println("Llega la solicitud para iniciar");
+                DF_HELPER.println(this.myAgent, "Llega la solicitud para iniciar");
                 ACLMessage agree = request.createReply();
                 agree.setPerformative(getEnabled() ? ACLMessage.AGREE : ACLMessage.REFUSE);
                 return agree;
             }
 
             protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
-                System.out.println("----INITIATE SIMULATION----");
+                DF_HELPER.println("Inicializa simulacion");
                 supplyActivity = new SupplyActivity();
+                supplyActivitiesList = new ArrayList<>();
                 pendingSupplyActivityList = new ArrayList<>();
                 initTime = Long.parseLong(request.getContent());
                 try {
@@ -164,8 +169,7 @@ public class CollectionPlace extends Agent {
 
     public void F_SetActualSupplyActivity() {
         if (this.pendingSupplyActivityList.isEmpty()) {
-            System.out.println("NO QUEDAN EN LA ITERACION");
-            System.exit(0);
+            BI_EndSimulation();
         } else {
             this.supplyActivity = pendingSupplyActivityList.get(0);
             pendingSupplyActivityList.remove(this.supplyActivity);
@@ -210,7 +214,11 @@ public class CollectionPlace extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                BI_ConsultTransport();
+                if (Objects.nonNull(this.supplyActivity.getSupplyActivityProposed())) {
+                    BI_ConsultTransport();
+                } else {
+                    F_SetActualSupplyActivity();
+                }
                 return 0;
             }
         });
@@ -243,7 +251,11 @@ public class CollectionPlace extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                BI_ConsultFreight(truckNameList);
+                if (!truckNameList.isEmpty()) {
+                    BI_ConsultFreight(truckNameList);
+                } else {
+                    F_SetActualSupplyActivity();
+                }
                 return 0;
             }
         });
@@ -266,14 +278,12 @@ public class CollectionPlace extends Agent {
                 for (ACLMessage aclMessage : responsesList) {
                     ACLMessage reply = aclMessage.createReply();
                     if (responsesList.indexOf(aclMessage) == 0) {
-                        System.out.println("ACEPT");
                         SupplyActivityTransportation proposedTransportation = new Gson().fromJson(
                                 aclMessage.getContent(),
                                 SupplyActivityTransportation.class);
                         this.supplyActivity.setSupplyActivityTransportation(proposedTransportation);
                         reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
                     } else {
-                        System.out.println("REJECT");
                         reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
                     }
                     acceptances.addElement(reply);
@@ -287,16 +297,15 @@ public class CollectionPlace extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                // System.out.println("Llegó al end");
                 BI_ConfirmSupplyActivity();
-                // BI_ConsultTransport();
                 return 0;
             }
         });
     }
 
     public void BI_ConfirmSupplyActivity() {
-        this.supplyActivity.setSupplyActivityOrder();
+        this.supplyActivity.generateSupplyActivityOrder();
+        this.supplyActivitiesList.add(this.supplyActivity);
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY);
         msg.addReceiver(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityRequired().getAgentName()).getAID());
@@ -304,38 +313,28 @@ public class CollectionPlace extends Agent {
         msg.addReceiver(
                 DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityTransportation().getAgentName()).getAID());
         msg.setContent(new Gson().toJson(this.supplyActivity));
-
         this.addBehaviour(new AchieveREInitiator(this, msg) {
-            protected ArrayList<SupplyActivity> pendingSupplyActivityList = getPendingSupplyActivityList();
-
             @Override
             protected void handleAllResultNotifications(Vector notifications) {
-                ArrayList<ACLMessage> responsesList = new ArrayList<>(notifications);
-                for (ACLMessage aclMessage : responsesList) {
-                    System.out.println(aclMessage.getSender().getLocalName());
-                }
-                System.out.println("Llegaron todos los mensajes");
+                DF_HELPER.println(myAgent, "Llegaron todos los mensajes");
             }
 
             @Override
             public int onEnd() {
                 super.onEnd();
-                if (this.pendingSupplyActivityList.isEmpty()) {
-                    BI_EndSimulation();
-                } else {
-                    F_SetActualSupplyActivity();
-                }
+                F_SetActualSupplyActivity();
                 return 0;
             }
         });
     }
 
     public void BI_EndSimulation() {
-        System.out.println("----END SIMULATION----");
+        DF_HELPER.println("END SIMULATION");
         Agent agenteReceiver = DF_HELPER.getRegisteredAdministrador();
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setConversationId(DF_HELPER.IC_END_SIMULATION);
         msg.addReceiver(agenteReceiver.getAID());
+        msg.setContent(new Gson().toJson(this.supplyActivitiesList));
         send(msg);
     }
 
@@ -391,8 +390,8 @@ public class CollectionPlace extends Agent {
             public int compare(ACLMessage msg1, ACLMessage msg2) {
                 SupplyActivityProposed obj1 = new Gson().fromJson(msg1.getContent(), SupplyActivityProposed.class);
                 SupplyActivityProposed obj2 = new Gson().fromJson(msg2.getContent(), SupplyActivityProposed.class);
-                int content1 = obj1.getMaterialStock().getTotalByPerson();
-                int content2 = obj2.getMaterialStock().getTotalByPerson();
+                int content1 = obj1.getMaterialStock().getTotalAmountHelpByPerson();
+                int content2 = obj2.getMaterialStock().getTotalAmountHelpByPerson();
                 return Integer.compare(content2, content1);
             }
         });
@@ -408,10 +407,10 @@ public class CollectionPlace extends Agent {
                 SupplyActivityTransportation obj2 = new Gson().fromJson(msg2.getContent(),
                         SupplyActivityTransportation.class);
                 double value1 = obj1.getHoraInicioCarga() * ParametersConfig.PROPOSED_START_TIME_WEIGHING
-                        + obj1.getHoraFin() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
+                        + obj1.getHoraFinDescarga() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
                         + obj1.getCantidadTrasladada() * ParametersConfig.PROPOSED_QUANTITY_TRANSPORTED_WEIGHING;
                 double value2 = obj2.getHoraInicioCarga() * ParametersConfig.PROPOSED_START_TIME_WEIGHING
-                        + obj2.getHoraFin() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
+                        + obj2.getHoraFinDescarga() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
                         + obj2.getCantidadTrasladada() * ParametersConfig.PROPOSED_QUANTITY_TRANSPORTED_WEIGHING;
                 return type.equals(ParametersConfig.ASC_STRING) ? Double.compare(value1, value2)
                         : Double.compare(value2, value1);
