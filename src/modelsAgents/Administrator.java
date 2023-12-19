@@ -1,6 +1,4 @@
 package src.modelsAgents;
-
-import java.io.Console;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,44 +7,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ObjectUtils.Null;
-
-import jade.core.AID;
 import jade.core.Agent;
-import jade.core.Profile;
-import jade.core.ProfileImpl;
 import jade.lang.acl.ACLMessage;
-import jade.core.Runtime;
-import jade.core.event.AgentEvent;
-import jade.domain.FIPANames;
-import jade.domain.FIPAAgentManagement.NotUnderstoodException;
-import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
-import jade.proto.ContractNetInitiator;
 import jade.proto.ContractNetResponder;
-import jade.proto.SimpleAchieveREResponder;
-import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import src.commons.AgentConfig;
 import src.commons.FileGenerator;
 import src.commons.ParametersConfig;
 import src.commons.ScenarioConfig;
-import src.commons.TestConfig;
 import src.models.SupplyActivity;
-import src.models.SupplyActivityOrder;
 import src.commons.ScenarioConfig.BehaviourCreationScenarioConfig;
 import src.commons.ScenarioConfig.CreationScenarioConfig;
 import src.commons.AgentConfig.CreationAgentConfig;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 

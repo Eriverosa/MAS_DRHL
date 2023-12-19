@@ -1,11 +1,6 @@
 package src.modelsAgents;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 
 import com.google.gson.Gson;
 

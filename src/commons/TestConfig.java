@@ -1,7 +1,6 @@
 package src.commons;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TestConfig {
     public static final ArrayList<B> LIST_B;

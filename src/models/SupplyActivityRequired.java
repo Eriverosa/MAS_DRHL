@@ -2,8 +2,6 @@ package src.models;
 
 import com.google.gson.Gson;
 
-import jade.core.Agent;
-
 public class SupplyActivityRequired implements Cloneable{
     Integer cantidadPersonas;
     Ubication ubicacion;

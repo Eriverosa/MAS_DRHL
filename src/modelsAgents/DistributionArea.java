@@ -2,7 +2,6 @@ package src.modelsAgents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;

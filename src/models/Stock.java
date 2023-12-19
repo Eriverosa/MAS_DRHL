@@ -3,7 +3,6 @@ package src.models;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import jade.util.leap.ArrayList;
 import com.google.gson.annotations.SerializedName;
 
 public class Stock {

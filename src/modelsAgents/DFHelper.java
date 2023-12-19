@@ -1,13 +1,11 @@
 package src.modelsAgents;
 
-import java.rmi.StubNotFoundException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jade.core.AID;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
@@ -15,8 +13,6 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
-import jade.proto.ContractNetResponder;
-// import jade.util.leap.ArrayList;
 import src.commons.AgentConfig;
 import src.commons.AgentConfig.CreationAgentConfig;
 

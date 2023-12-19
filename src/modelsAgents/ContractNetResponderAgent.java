@@ -1,7 +1,4 @@
 package src.modelsAgents;
-
-import java.util.Random;
-
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.FIPANames;

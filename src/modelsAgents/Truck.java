@@ -14,9 +14,7 @@ import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetResponder;
-import src.models.SupplyActivityProposed;
 import src.models.SupplyActivityTransportation;
-import src.models.SupplyActivityRequired;
 import src.models.SupplyActivityOrder;
 import src.commons.ParametersConfig;
 import src.models.SupplyActivity;
@@ -215,7 +213,6 @@ public class Truck extends Agent {
             @Override
             public void onStart() {
                 this.listSupplyActivities = getListSupplyActivities();
-                // TODO Auto-generated method stub
                 super.onStart();
             }
 

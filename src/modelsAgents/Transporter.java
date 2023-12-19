@@ -1,21 +1,14 @@
 package src.modelsAgents;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
-
 import com.google.gson.Gson;
 
 import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetResponder;
-import src.commons.AgentConfig;
-import src.commons.AgentConfig.CreationAgentConfig;
 
 public class Transporter extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();

@@ -1,13 +1,9 @@
 package src.services;
 
 import jade.core.Runtime;
-import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import src.commons.AgentConfig;
-import src.modelsAgents.Truck;
-import jade.core.AID;
-import jade.core.AgentContainer;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 

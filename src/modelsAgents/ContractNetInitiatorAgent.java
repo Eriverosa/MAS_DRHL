@@ -3,11 +3,7 @@ package src.modelsAgents;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
-// import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.FIPANames;
-
-import java.util.Vector;
-
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
