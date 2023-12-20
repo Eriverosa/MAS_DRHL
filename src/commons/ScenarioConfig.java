@@ -11,7 +11,7 @@ public class ScenarioConfig {
 
     static {
         CREATION_SCENARIO_CONFIG_LIST = new ArrayList<>();
-        CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 3,
+        CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 100,
                 Arrays.asList(
                         new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 100),
                         new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),

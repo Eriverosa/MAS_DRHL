@@ -28,6 +28,8 @@ import com.google.gson.JsonObject;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
+
+
 public class Administrator extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     private long currExecutionTime;
@@ -97,6 +99,7 @@ public class Administrator extends Agent {
     public void BI_UpdateState(List<Agent> listAgentsEnable, List<Agent> listAgentsDisable,
             boolean enabBoolean) {
         // if (Objects.nonNull(enabBoolean)){
+
         List<Agent> listAgents = enabBoolean ? listAgentsEnable : listAgentsDisable;
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setConversationId(DF_HELPER.IC_UPDATE_AGENT_STATE);
@@ -129,9 +132,9 @@ public class Administrator extends Agent {
                 .get(0);
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         if (this.currCreationScenarioConfig.getnCurrIterations() == 0) {
-            currExecutionTime = 0;
+            currExecutionTime = ParametersConfig.TIME_EXECUTION_INIT;
         } else {
-            currExecutionTime += 300000;
+            currExecutionTime += ParametersConfig.TIME_EXECUTION_ADD;
         }
         msg.setConversationId(DF_HELPER.IC_INITIALIZE_SIMULATION);
         msg.addReceiver(agente.getAID());
