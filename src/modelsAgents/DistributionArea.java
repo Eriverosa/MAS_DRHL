@@ -2,6 +2,9 @@ package src.modelsAgents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
@@ -9,6 +12,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetResponder;
+import src.commons.ParametersConfig;
 import src.models.MaterialStock;
 import src.models.SupplyActivity;
 import src.models.SupplyActivityRequired;
@@ -27,36 +31,13 @@ public class DistributionArea extends Agent {
     private Ubication ubication;
     private ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
 
-    public Ubication getUbication() {
-        return ubication;
-    }
-
-    public void setUbication(Ubication ubication) {
-        this.ubication = ubication;
-    }
-
-    public Integer getPoblacion() {
-        return poblacion;
-    }
-
-    public void setPoblacion(Integer poblacion) {
-        this.poblacion = poblacion;
-    }
-
-    public MaterialStock getMaterialStock() {
-        return materialStock;
-    }
-
-    public void setMaterialStock(MaterialStock materialStock) {
-        this.materialStock = materialStock;
-    }
-
     @Override
     protected void setup() {
         ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
         // this.cargarInformacionAgente(listaArgumentos);
         this.BR_RequiredSupply();
         this.BR_ConfirmSupplyActivity();
+        this.BR_UpdateTimeEvent();
         this.cargarInformacionAgente(listaArgumentos);
         DF_HELPER.BR_UpdateAgentState(this);
         DF_HELPER.registrarServicio(this);
@@ -81,106 +62,149 @@ public class DistributionArea extends Agent {
         this.setMaterialStock(new MaterialStock(listStockMaterial));
     }
 
-    public void BR_RequiredSupply() {
-        int testValue = 2;
-        if (testValue == 2) {
-            MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
-                    MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY));
-            this.addBehaviour(new ContractNetResponder(this, template) {
-                private Ubication ubication;
-                private Integer poblacion;
-                private ArrayList<SupplyActivityOrder> listSupplyActivities;
+    public void BR_UpdateTimeEvent() {
+        MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_UPDATE_TIME_EVENT;
+        addBehaviour(new AchieveREResponder(this, template) {
+            ArrayList<SupplyActivityOrder> listSupplyActivities;
+            MaterialStock materialStock;
 
-                @Override
-                public void onStart() {
-                    this.poblacion = getPoblacion();
-                    this.ubication = getUbication();
-                    this.listSupplyActivities = getListSupplyActivities();
-                    super.onStart();
+            @Override
+            public void onStart() {
+                this.listSupplyActivities = getListSupplyActivities();
+                this.materialStock = getMaterialStock();
+                super.onStart();
+            }
+
+            protected ACLMessage handleRequest(ACLMessage request) {
+                ArrayList<SupplyActivityOrder> listCopySupplyActivities = this.listSupplyActivities.stream()
+                        .filter(element -> !Objects.equals(element.getStatus(),
+                                ParametersConfig.STATE_SUPPLY_ACTIVITY_DONE))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                long currTime = Long.valueOf(request.getContent());
+
+                for (SupplyActivityOrder supplyActivityOrder : listCopySupplyActivities) {
+                    if (currTime >= supplyActivityOrder.getHoraFinDescarga()) {
+                        supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_DONE);
+                        this.materialStock.addMaterialStock(supplyActivityOrder.getMaterialStock());
+                    } else if (currTime >= supplyActivityOrder.getHoraInicioDescarga() &&
+                            currTime < supplyActivityOrder.getHoraFinDescarga()) {
+                        supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_DOING);
+                    } else {
+                        supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_PENDING);
+                    }
+                    this.materialStock.discountMaterialStockByTime();
                 }
+                return new ACLMessage(ACLMessage.INFORM);
+            }
 
-                protected ACLMessage handleCfp(ACLMessage cfp) {
-                    DF_HELPER.println(this.getAgent(), cfp);
-                    ACLMessage reply = cfp.createReply();
-                    if (getEnabled()) {
+            // @Override
+            // public int onEnd() {
+            // setMaterialStock(this.materialStock);
+            // // TODO Auto-generated method stub
+            // return super.onEnd();
+            // }
+        });
+    }
+
+    public void BR_RequiredSupply() {
+        MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
+                MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY));
+        this.addBehaviour(new ContractNetResponder(this, template) {
+            private Ubication ubication;
+            private Integer poblacion;
+            private ArrayList<SupplyActivityOrder> listSupplyActivities;
+            private Boolean enabled;
+            private MaterialStock materialStock;
+            private int nHelpNeed;
+
+            @Override
+            public void onStart() {
+                this.enabled = getEnabled();
+                this.poblacion = getPoblacion();
+                this.ubication = getUbication();
+                this.materialStock = getMaterialStock();
+                this.listSupplyActivities = getListSupplyActivities();
+                super.onStart();
+            }
+
+            protected ACLMessage handleCfp(ACLMessage cfp) {
+                DF_HELPER.println(this.getAgent(), cfp);
+                ACLMessage reply = cfp.createReply();
+                if (this.enabled) {
+                    long tiempoInicio = Long.valueOf(cfp.getContent());
+                    // this.nHelpNeed = this.poblacion -
+                    // this.materialStock.getTotalAmountHelpByPerson();
+                    if (this.materialStock.getNeedHelp(this.poblacion)) {
+                        this.nHelpNeed = this.materialStock.getTotalNeedHelp(this.poblacion);
                         if (this.listSupplyActivities.isEmpty()) {
-                            long tiempoInicio = Long.valueOf(cfp.getContent());
                             SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
-                                    this.ubication, this.myAgent.getLocalName(), tiempoInicio);
+                                    this.nHelpNeed, this.ubication, this.myAgent.getLocalName(), tiempoInicio,
+                                    this.materialStock);
                             reply.setPerformative(ACLMessage.PROPOSE);
                             reply.setContent(new Gson().toJson(requiredSupply));
                         } else {
-                            System.out.println("EL DISTRIBUTION AREA YA TIENE ALGUNA ACTIVIDAD, DEBE TRABAJARLA");
-                            System.exit(0);
+                            SupplyActivityOrder supplyActivityOrder = this.listSupplyActivities
+                                    .get(this.listSupplyActivities.size() - 1);
+                            if (tiempoInicio >= supplyActivityOrder.getHoraFinDescarga()) {
+                                SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
+                                        this.nHelpNeed, this.ubication, this.myAgent.getLocalName(), tiempoInicio,
+                                        this.materialStock);
+                                reply.setPerformative(ACLMessage.PROPOSE);
+                                reply.setContent(new Gson().toJson(requiredSupply));
+                            } else {
+                                reply.setPerformative(ACLMessage.REFUSE);
+                            }
                         }
-
                     } else {
-                        reply.setPerformative(ACLMessage.FAILURE);
+                        reply.setPerformative(ACLMessage.REFUSE);
                     }
-                    return reply;
-                }
 
-                protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
-                    DF_HELPER.println(this.getAgent(), cfp);
-                    ACLMessage reply = accept.createReply();
-                    reply.setPerformative(ACLMessage.INFORM);
-                    reply.setContent("Proposal accepted!");
-                    return reply;
-                }
+                    // System.out.println(this.poblacion);
+                    // System.out.println(this.materialStock.getTotalAmountHelpByPerson());
+                    // System.out.println("-----");
+                    // if (this.listSupplyActivities.isEmpty()) {
+                    // SupplyActivityRequired requiredSupply = new
+                    // SupplyActivityRequired(this.poblacion,
+                    // this.ubication, this.myAgent.getLocalName(), tiempoInicio,
+                    // this.materialStock);
+                    // reply.setPerformative(ACLMessage.PROPOSE);
+                    // reply.setContent(new Gson().toJson(requiredSupply));
+                    // } else {
+                    // SupplyActivityOrder supplyActivityOrder = this.listSupplyActivities
+                    // .get(this.listSupplyActivities.size() - 1);
+                    // if (tiempoInicio >= supplyActivityOrder.getHoraFinDescarga()) {
+                    // SupplyActivityRequired requiredSupply = new
+                    // SupplyActivityRequired(this.poblacion,
+                    // this.ubication, this.myAgent.getLocalName(), tiempoInicio,
+                    // this.materialStock);
+                    // reply.setPerformative(ACLMessage.PROPOSE);
+                    // reply.setContent(new Gson().toJson(requiredSupply));
+                    // } else {
+                    // reply.setPerformative(ACLMessage.FAILURE);
+                    // }
+                    // // System.out.println("EL DISTRIBUTION AREA YA TIENE ALGUNA ACTIVIDAD, DEBE
+                    // // TRABAJARLA");
+                    // // System.exit(0);
+                    // }
 
-                protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
-                    DF_HELPER.println(this.getAgent(), reject);
+                } else {
+                    reply.setPerformative(ACLMessage.FAILURE);
                 }
-            });
-        } else if (testValue == 1) {
-            MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.CFP),
-                    MessageTemplate.MatchConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY));
+                return reply;
+            }
 
-            this.addBehaviour(new ContractNetResponder(this, template) {
-                private Integer poblacion;
-                private Ubication ubication;
+            protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
+                DF_HELPER.println(this.getAgent(), cfp);
+                ACLMessage reply = accept.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                reply.setContent("Proposal accepted!");
+                return reply;
+            }
 
-                @Override
-                public void onStart() {
-                    this.poblacion = getPoblacion();
-                    this.ubication = getUbication();
-                    super.onStart();
-                }
-
-                protected ACLMessage handleCfp(ACLMessage cfp) {
-                    // getMaterialStock().repartirOptimizado(Integer.parseInt(cfp.getContent()));
-                    DF_HELPER.println(this.getAgent(), cfp);
-                    ACLMessage reply = cfp.createReply();
-                    if (getEnabled()) {
-                        long tiempoInicio = 0;
-                        if (!listSupplyActivities.isEmpty()) {
-                            System.exit(0);
-                        }
-                        SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
-                                this.ubication, this.myAgent.getLocalName(), tiempoInicio);
-                        reply.setPerformative(ACLMessage.PROPOSE);
-                        reply.setContent(new Gson().toJson(requiredSupply));
-                    } else {
-                        reply.setPerformative(ACLMessage.FAILURE);
-                    }
-                    return reply;
-                }
-
-                protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
-                    System.out.println("ResponderAgent: ACCEPT_PROPOSAL received from InitiatorAgent: "
-                            + accept.getSender().getName());
-                    ACLMessage reply = accept.createReply();
-                    reply.setPerformative(ACLMessage.INFORM);
-                    reply.setContent("Proposal accepted!");
-                    return reply;
-                }
-
-                protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
-                    System.out.println("ResponderAgent: REJECT_PROPOSAL received from InitiatorAgent: "
-                            + reject.getSender().getName());
-                }
-            });
-        }
+            protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
+                DF_HELPER.println(this.getAgent(), reject);
+            }
+        });
 
     }
 
@@ -188,21 +212,30 @@ public class DistributionArea extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY));
         this.addBehaviour(new AchieveREResponder(this, template) {
-            private MaterialStock materialStock;
+            // private MaterialStock materialStock;
+            private ArrayList<SupplyActivityOrder> listSupplyActivities;
 
             @Override
             public void onStart() {
-                this.materialStock = getMaterialStock();
+                // this.materialStock = getMaterialStock();
+                this.listSupplyActivities = getListSupplyActivities();
                 super.onStart();
             }
 
             protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
                 SupplyActivity supplyActivity = (SupplyActivity) new Gson()
                         .fromJson(request.getContent(), SupplyActivity.class);
-                this.materialStock.addMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
+                SupplyActivityOrder supplyActivityOrder = supplyActivity.getSupplyActivityOrder();
+                this.listSupplyActivities.add(supplyActivityOrder);
+                // this.materialStock.addMaterialStock(supplyActivity.getSupplyActivityProposed().getMaterialStock());
                 DF_HELPER.println(this.myAgent, request);
                 return request.createReply();
             }
+
+            protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
+                DF_HELPER.println(this.getAgent(), reject);
+            }
+
         });
     }
 
@@ -318,5 +351,29 @@ public class DistributionArea extends Agent {
 
     public void setListSupplyActivities(ArrayList<SupplyActivityOrder> listSupplyActivities) {
         this.listSupplyActivities = listSupplyActivities;
+    }
+
+    public Ubication getUbication() {
+        return ubication;
+    }
+
+    public void setUbication(Ubication ubication) {
+        this.ubication = ubication;
+    }
+
+    public Integer getPoblacion() {
+        return poblacion;
+    }
+
+    public void setPoblacion(Integer poblacion) {
+        this.poblacion = poblacion;
+    }
+
+    public MaterialStock getMaterialStock() {
+        return materialStock;
+    }
+
+    public void setMaterialStock(MaterialStock materialStock) {
+        this.materialStock = materialStock;
     }
 }

@@ -4,18 +4,24 @@ import com.google.gson.Gson;
 
 public class SupplyActivityRequired implements Cloneable{
     Integer cantidadPersonas;
+    Integer cantidadPersonaRequired;
     Ubication ubicacion;
     String agentName;
     long horaRequerida;
-
-    public SupplyActivityRequired(Integer cantidadPersonas, Ubication ubication, String nombreAgente, long horaRequerida) {
+    MaterialStock materialStock;
+    
+    public SupplyActivityRequired(Integer cantidadPersonas, Integer cantidadPersonasRequired, Ubication ubicacion, String agentName, long horaRequerida,
+            MaterialStock materialStock) {
         this.cantidadPersonas = cantidadPersonas;
-        this.ubicacion = ubication;
-        this.agentName = nombreAgente;
+        this.ubicacion = ubicacion;
+        this.cantidadPersonaRequired = cantidadPersonasRequired;
+        this.agentName = agentName;
         this.horaRequerida = horaRequerida;
+        this.materialStock = materialStock;
     }
 
-    
+
+
     public Integer getCantidadPersonas() {
         return cantidadPersonas;
     }
@@ -72,6 +78,30 @@ public class SupplyActivityRequired implements Cloneable{
 
     public void setHoraRequerida(long horaRequerida) {
         this.horaRequerida = horaRequerida;
+    }
+
+
+
+    public MaterialStock getMaterialStock() {
+        return materialStock;
+    }
+
+
+
+    public void setMaterialStock(MaterialStock materialStock) {
+        this.materialStock = materialStock;
+    }
+
+
+
+    public Integer getCantidadPersonaRequired() {
+        return cantidadPersonaRequired;
+    }
+
+
+
+    public void setCantidadPersonaRequired(Integer cantidadPersonaRequired) {
+        this.cantidadPersonaRequired = cantidadPersonaRequired;
     }
 
 }

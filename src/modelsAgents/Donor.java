@@ -51,8 +51,6 @@ public class Donor extends Agent {
                         Integer.parseInt((String) listaArgumentos.get(2))));
         this.setMaterialStock(new MaterialStock(listStockMaterial));
         this.setMaterialStockReserved(new MaterialStock());
-        System.out.println(this.getMaterialStock());
-        System.out.println("this.getMaterialStock()");
     }
 
     public Boolean getEnabled() {
@@ -99,11 +97,11 @@ public class Donor extends Agent {
                     SupplyActivityRequired requiredSupply = (SupplyActivityRequired) new Gson()
                             .fromJson(cfp.getContent(), SupplyActivityRequired.class).clone();
                     MaterialStock materialStockSupply = this.materialStock
-                            .getOptimeCombination(requiredSupply.getCantidadPersonas());
+                            .getOptimeCombination(requiredSupply.getCantidadPersonaRequired());
                     SupplyActivityProposed proposedSupply = new SupplyActivityProposed(materialStockSupply,
                             getUbication(),
                             this.getAgent().getLocalName());
-                    if (proposedSupply.getMaterialStock().getTotalAmountHelp() > 0) {
+                    if (proposedSupply.getMaterialStock().getTotalAmountHelpByCC() > 0) {
                         reply.setPerformative(ACLMessage.PROPOSE);
                         reply.setContent(new Gson().toJson(proposedSupply));
                     } else {

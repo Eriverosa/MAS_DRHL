@@ -1,4 +1,5 @@
 package src.models;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,13 +48,21 @@ public class MaterialStock {
         return totalQuantity;
     }
 
-    public Integer getTotalAmountHelp() {
+    public Integer getTotalAmountHelpByCC() {
         Integer totalQuantity = 0;
         for (Stock stock : this.getMaterialStock()) {
             totalQuantity += (stock.getTamanho() * stock.getCantidad());
         }
         return totalQuantity;
     }
+
+    public Boolean getNeedHelp(int amountPeople) {
+        return this.getTotalAmountHelpByPerson() <= ParametersConfig.CANTIDAD_MINIMA_STOCK_PERCENT * amountPeople;
+    }
+
+    public int getTotalNeedHelp(int amountPeople) {
+        return amountPeople - this.getTotalAmountHelpByPerson();
+    }    
 
     public void agregarMaterial(Stock material) {
         for (Stock existingMaterial : materialStock) {
@@ -85,11 +94,11 @@ public class MaterialStock {
     }
 
     // public int getCantidadTotal() {
-    //     int totalMateriales = 0;
-    //     for (Stock material : materialStock) {
-    //         totalMateriales += material.getCantidad();
-    //     }
-    //     return totalMateriales;
+    // int totalMateriales = 0;
+    // for (Stock material : materialStock) {
+    // totalMateriales += material.getCantidad();
+    // }
+    // return totalMateriales;
     // }
 
     @Override
@@ -229,6 +238,13 @@ public class MaterialStock {
             int newStock = stockEncontrado.getCantidad() - stock.getCantidad();
             stockEncontrado.setCantidad(newStock);
         }
+    }
+
+    public void discountMaterialStockByTime() {
+        int resultadoRedondeado = (int) Math
+                .round((double) ParametersConfig.TIME_EXECUTION_ADD_MS / ParametersConfig.TIME_DELAY_BY_PERSON_MS);
+        MaterialStock materialStock = this.getOptimeCombination(resultadoRedondeado);
+        this.removeMaterialStock(materialStock);
     }
 
 }

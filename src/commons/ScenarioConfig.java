@@ -1,41 +1,37 @@
 package src.commons;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import src.commons.AgentConfig.CreationAgentConfig;
+// import src.commons.AgentConfig.CreationAgentConfig;
+import src.models.SupplyActivity;
 
 public class ScenarioConfig {
-    public static final List<CreationScenarioConfig> CREATION_SCENARIO_CONFIG_LIST;
+    public final List<CreationScenarioConfig> creationScenarioConfigList = new ArrayList<>();
+    public final AgentConfig agentConfig;
 
-    static {
-        CREATION_SCENARIO_CONFIG_LIST = new ArrayList<>();
-        CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 100,
+    public ScenarioConfig() {
+        this.agentConfig = new AgentConfig();
+        creationScenarioConfigList.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 1,
                 Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
-        // CREATION_SCENARIO_CONFIG_LIST.add(new CreationScenarioConfig("PRIMER SISMO",
-        // Arrays.asList(
-        // new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true,
-        // 80),
-        // // new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
-        // // new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 100),
-        // // new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG,
-        // true, 100),
-        // new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG,
-        // true, 100))));
+                        new BehaviourCreationScenarioConfig(this.agentConfig.TRANSPORTER_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.TRUCK_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.DONOR_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
+        creationScenarioConfigList.add(new CreationScenarioConfig("PRIMER_SISMO", 1,
+                Arrays.asList(
+                        new BehaviourCreationScenarioConfig(this.agentConfig.TRANSPORTER_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.TRUCK_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.DONOR_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(this.agentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
     }
 
-    public static List<CreationScenarioConfig> getCREATION_SCENARIO_CONFIG_LIST(){
-        return CREATION_SCENARIO_CONFIG_LIST;
-    }
-
-    public static CreationScenarioConfig getNextCreationScenarioConfigEnable(String desiredState) {
-        return CREATION_SCENARIO_CONFIG_LIST.stream()
+    public CreationScenarioConfig getNextCreationScenarioConfigEnable(String desiredState) {
+        return creationScenarioConfigList.stream()
                 .filter(scenarioConfig -> scenarioConfig
                         .getStateIteration() == ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE)
                 .findFirst()
@@ -48,8 +44,8 @@ public class ScenarioConfig {
                 .orElse(null);
     }
 
-    public static CreationScenarioConfig getNextCreationScenarioConfigEnable() {
-        return CREATION_SCENARIO_CONFIG_LIST.stream()
+    public CreationScenarioConfig getNextCreationScenarioConfigEnable() {
+        return creationScenarioConfigList.stream()
                 .filter(scenarioConfig -> scenarioConfig
                         .getStateIteration() == ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE)
                 .findFirst()
@@ -60,20 +56,13 @@ public class ScenarioConfig {
                 .orElseGet(() -> null);
     }
 
-    public static class CreationScenarioConfig {
+    public class CreationScenarioConfig {
         private String name;
         Boolean enable;
         private List<BehaviourCreationScenarioConfig> behaviourCreationScnearionConfigList;
-        private Integer nIterations, nCurrIterations = 0;
+        private Integer nIterations, nCurrIterations;
         private String stateIteration = ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE;
-
-        public String getStateIteration() {
-            return stateIteration;
-        }
-
-        public void setStateIteration(String stateIteration) {
-            this.stateIteration = stateIteration;
-        }
+        private ArrayList<SupplyActivity> supplyActivitiesList = new ArrayList<>();
 
         public CreationScenarioConfig(String name, Integer nIterations,
                 List<BehaviourCreationScenarioConfig> behaviourCreationScnearionConfigList) {
@@ -81,6 +70,15 @@ public class ScenarioConfig {
             this.enable = true;
             this.nIterations = nIterations;
             this.behaviourCreationScnearionConfigList = behaviourCreationScnearionConfigList;
+            this.nCurrIterations = 0;
+        }
+
+        public String getStateIteration() {
+            return stateIteration;
+        }
+
+        public void setStateIteration(String stateIteration) {
+            this.stateIteration = stateIteration;
         }
 
         public Integer getnCurrIterations() {
@@ -147,9 +145,17 @@ public class ScenarioConfig {
             this.nIterations = nIterations;
         }
 
+        public ArrayList<SupplyActivity> getSupplyActivitiesList() {
+            return supplyActivitiesList;
+        }
+
+        public void setSupplyActivitiesList(ArrayList<SupplyActivity> supplyActivitiesList) {
+            this.supplyActivitiesList = supplyActivitiesList;
+        }
+
     }
 
-    public static class BehaviourCreationScenarioConfig {
+    public class BehaviourCreationScenarioConfig {
         CreationAgentConfig creationAgentConfig;
         Boolean enable;
         Integer nEnabledAgents;
@@ -185,5 +191,9 @@ public class ScenarioConfig {
             this.nEnabledAgents = nEnabledAgents;
         }
 
+    }
+
+    public List<CreationScenarioConfig> getCreationScenarioConfigList() {
+        return creationScenarioConfigList;
     }
 }

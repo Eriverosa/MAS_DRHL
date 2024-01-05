@@ -76,7 +76,7 @@ public class Truck extends Agent {
         this.setNameTransportista(listaArgumentos.get(0).toString());
         this.setUbication(new Ubication(Integer.parseInt((String) listaArgumentos.get(1)),
                 Integer.parseInt((String) listaArgumentos.get(2))));
-        System.out.println(listaArgumentos.get(3));
+        // System.out.println(listaArgumentos.get(3));
         this.setCapacidad((Integer) listaArgumentos.get(3));
     }
 
@@ -161,7 +161,7 @@ public class Truck extends Agent {
                                 supplyActivity.getSupplyActivityRequired().getUbicacion(),
                                 getUbication());
                         Integer cantidadCarga = getMaxLoad((int) getCapacidad(),
-                                supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelp());
+                                supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByCC());
                         long horaInicioDisponible = getEnabledActivityTime(
                                 supplyActivity.getSupplyActivityRequired().getHoraRequerida(), tiempoViajeCarga);
                         if (ParametersConfig.ERROR_LONG != horaInicioDisponible) {

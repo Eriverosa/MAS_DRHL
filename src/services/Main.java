@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) throws StaleProxyException {
         Profile p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
-        p.setParameter(Profile.GUI, "false");
+        p.setParameter(Profile.GUI, "true");
         boolean test = false;
         if (test) {
             // Profile myProfile = new ProfileImpl();
@@ -20,24 +20,21 @@ public class Main {
 
             // Obtener el contenedor principal
             ContainerController mainContainer = Runtime.instance().createMainContainer(p);
-            mainContainer.createNewAgent("Iniciador",
-                    "src.modelsAgents.ContractNetInitiatorAgent",
-                    new Object[] {}).start();
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 5; i++) {
                 mainContainer.createNewAgent("Responder_" + i,
                         "src.modelsAgents.ContractNetResponderAgent",
                         new Object[] {}).start();
             }
+            mainContainer.createNewAgent("Iniciador",
+                    "src.modelsAgents.ContractNetInitiatorAgent",
+                    new Object[] {}).start();
 
         } else {
-
             Runtime.instance().createMainContainer(p);
-
-            AgentConfig.CreationAgentConfig agentConfig = AgentConfig.ADMINISTRATOR_CONFIG;
-            agentConfig.getContainerController()
-                    .createNewAgent("Administrator", agentConfig.getClassRoute(), new Object[] {}).start();
+            AgentConfig agentConfig = new AgentConfig();
+            agentConfig.ADMINISTRATOR_CONFIG.getContainerController()
+                    .createNewAgent("Administrator", agentConfig.ADMINISTRATOR_CONFIG.getClassRoute(), new Object[] {}).start();
         }
     }
 
-    
 }

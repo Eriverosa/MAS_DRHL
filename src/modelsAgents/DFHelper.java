@@ -6,18 +6,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.Templates;
+
 import jade.core.Agent;
+import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
+import jade.domain.FIPANames.InteractionProtocol;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
+import jade.proto.SimpleAchieveREResponder;
+import jade.proto.SubscriptionResponder;
+import jade.tools.sniffer.Message;
+// import src.commons.AgentConfig;
 import src.commons.AgentConfig;
-import src.commons.AgentConfig.CreationAgentConfig;
+// import src.commons.agentConfig.CreationAgentConfig;
+import src.commons.CreationAgentConfig;
 
 public class DFHelper extends Agent {
     private static DFHelper instance = null;
+
+    private AgentConfig agentConfig = new AgentConfig();
 
     // public final ArrayList<Agent> LIST_AGENTS = new ArrayList<>();
     public final ArrayList<Administrator> LIST_REGISTERED_ADMINISTRATOR = new ArrayList<>();
@@ -31,15 +42,80 @@ public class DFHelper extends Agent {
      * IC - ID CONVERSATIONS
      */
     public final String IC_FINISHED_CREATION = "ID_CONVERSATION_FINISHED_CREATION";
-    public final String IC_UPDATE_AGENT_STATE = "ID_CONVERSATION_UPDATE_AGENT_STATE";
-    public final String IC_INITIALIZE_SIMULATION = "ID_CONVERSATION_INITIALIZE_SIMULATION";
-    public final String IC_END_SIMULATION = "ID_CONVERSATION_END_SIMULATION";
+    // public final String IC_UPDATE_AGENT_STATE =
+    // "ID_CONVERSATION_UPDATE_AGENT_STATE";
+    // public final String IC_END_SIMULATION = "ID_CONVERSATION_END_SIMULATION";
     public final String IC_CONSULT_REQUIRED_SUPPLY = "ID_CONVERSATION_CONSULT_REQUIRED_SUPPLY";
     public final String IC_CONSULT_PROPOSED_SUPPLY = "ID_CONVERSATION_CONSULT_PROPOSED_SUPPLY";
     public final String IC_CONSULT_TRANSPORTER = "ID_CONVERSATION_CONSULT_TRANSPORT";
     public final String IC_REQUEST_FREIGHT = "ID_CONVERSATION_CONSULT_FREIGHT";
     public final String IC_REGISTER_TO_CARRIER = "ID_CONVERSATION_REGISTER_TO_CARRIER";
     public final String IC_CONFIRM_SUPPLY_ACTIVITY = "ID_CONVERSATION_CONFIRM_SUPPLY_ACTIVITY";
+
+    // REQUEST_INITIALIZATOR_SIMULATION
+    private final int INT_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION = ACLMessage.CFP;
+    private final String IC_REQUEST_INITIALIZATOR_SIMULATION = "ID_CONVERSATION_REQUEST_INITIALIZATOR_SIMULATION";
+    public final ACLMessage ACL_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION = getMessage(
+            INT_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION, IC_REQUEST_INITIALIZATOR_SIMULATION);
+    public final MessageTemplate MESSAGE_TEMPLATE_REQUEST_INITIALIZATOR_SIMULATION = getMessageTemplate(
+            INT_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION, IC_REQUEST_INITIALIZATOR_SIMULATION);
+
+    // INITIALIZE_SIMULATION
+    private final int INT_MESSAGE_INITIALIZE_SIMULATION = ACLMessage.REQUEST;
+    private final String IC_INITIALIZE_SIMULATION = "ID_CONVERSATION_INITIALIZE_SIMULATION";
+    public final ACLMessage ACL_MESSAGE_INITIALIZE_SIMULATION = getMessage(
+            INT_MESSAGE_INITIALIZE_SIMULATION, IC_INITIALIZE_SIMULATION);
+    public final MessageTemplate MESSAGE_TEMPLATE_INITIALIZE_SIMULATION = getMessageTemplate(
+            INT_MESSAGE_INITIALIZE_SIMULATION, IC_INITIALIZE_SIMULATION);
+
+    // UPDATE_AGENT_STATE
+    private final int INT_MESSAGE_UPDATE_AGENT_STATE = ACLMessage.REQUEST;
+    private final String IC_UPDATE_AGENT_STATE = "ID_CONVERSATION_UPDATE_AGENT_STATE";
+    public final ACLMessage ACL_MESSAGE_UPDATE_AGENT_STATE = getMessage(
+            INT_MESSAGE_UPDATE_AGENT_STATE, IC_UPDATE_AGENT_STATE);
+    public final MessageTemplate MESSAGE_TEMPLATE_UPDATE_AGENT_STATE = getMessageTemplate(
+            INT_MESSAGE_UPDATE_AGENT_STATE, IC_UPDATE_AGENT_STATE);
+
+    // UPDATE_TIME_EVENT
+    private final int INT_MESSAGE_UPDATE_TIME_EVENT = ACLMessage.REQUEST;
+    private final String IC_UPDATE_TIME_EVENT = "ID_CONVERSATION_UPDATE_TIME_EVENT";
+    public final ACLMessage ACL_MESSAGE_UPDATE_TIME_EVENT = getMessage(
+            INT_MESSAGE_UPDATE_TIME_EVENT, IC_UPDATE_TIME_EVENT);
+    public final MessageTemplate MESSAGE_TEMPLATE_UPDATE_TIME_EVENT = getMessageTemplate(
+            INT_MESSAGE_UPDATE_TIME_EVENT, IC_UPDATE_TIME_EVENT);
+
+    // END_SIMULATION
+    private final int INT_MESSAGE_END_SIMULATION = ACLMessage.REQUEST;
+    private final String IC_END_SIMULATION = "ID_CONVERSATION_END_SIMULATION";
+    public final ACLMessage ACL_MESSAGE_END_SIMULATION = getMessage(
+            INT_MESSAGE_END_SIMULATION, IC_END_SIMULATION);
+    public final MessageTemplate MESSAGE_TEMPLATE_END_SIMULATION = getMessageTemplate(
+            INT_MESSAGE_END_SIMULATION, IC_END_SIMULATION);
+
+    // Método para obtener un mensaje con un performative y conversation ID
+    // específicos
+    private ACLMessage getMessage(int performative, String conversationId) {
+        ACLMessage msg = new ACLMessage(performative);
+        msg.setConversationId(conversationId);
+        return msg;
+    }
+
+    // Método para obtener un MessageTemplate con un performative y conversation ID
+    // específicos
+    private MessageTemplate getMessageTemplate(int performative, String conversationId) {
+        MessageTemplate mp = MessageTemplate.MatchPerformative(performative);
+        MessageTemplate mi = MessageTemplate.MatchConversationId(conversationId);
+        return MessageTemplate.and(mp, mi);
+    }
+
+    public void waitTime() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     public Agent getRegisteredAdministrador() {
         return LIST_REGISTERED_ADMINISTRATOR.get(0);
@@ -63,34 +139,34 @@ public class DFHelper extends Agent {
     }
 
     public void registrarServicio(Agent agente) {
-        if (Objects.equals(this.getClaseAgente(agente), AgentConfig.ADMINISTRATOR_CONFIG.getClassName())) {
+        if (Objects.equals(this.getClaseAgente(agente), agentConfig.ADMINISTRATOR_CONFIG.getClassName())) {
             LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.TRUCK_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), agentConfig.TRUCK_CONFIG.getClassName())) {
             LIST_REGISTERED_TRUCK.add((Truck) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), agentConfig.TRANSPORTER_CONFIG.getClassName())) {
             LIST_REGISTERED_TRANSPORTER.add((Transporter) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), agentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
             LIST_REGISTERED_DISTRIBUTION_AREA.add((DistributionArea) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.DONOR_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), agentConfig.DONOR_CONFIG.getClassName())) {
             LIST_REGISTERED_DONOR.add((Donor) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), agentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
             LIST_REGISTERED_COLLECTION_PLACE.add((CollectionPlace) agente);
         }
     }
 
     public ArrayList<Agent> getAgentsList(CreationAgentConfig creationAgentConfig) {
         ArrayList<Agent> listAgents = new ArrayList<>();
-        if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.TRUCK_CONFIG.getClassName())) {
+        if (Objects.equals(creationAgentConfig.getClassName(), agentConfig.TRUCK_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_TRUCK);
-        } else if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+        } else if (Objects.equals(creationAgentConfig.getClassName(), agentConfig.TRANSPORTER_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_TRANSPORTER);
         } else if (Objects.equals(creationAgentConfig.getClassName(),
-                AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                agentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_DISTRIBUTION_AREA);
-        } else if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.DONOR_CONFIG.getClassName())) {
+        } else if (Objects.equals(creationAgentConfig.getClassName(), agentConfig.DONOR_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_DONOR);
         } else if (Objects.equals(creationAgentConfig.getClassName(),
-                AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                agentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_COLLECTION_PLACE);
         }
         return listAgents;
@@ -98,11 +174,11 @@ public class DFHelper extends Agent {
 
     public Agent getAgent(String name) {
         ArrayList<Agent> listaAgentes = new ArrayList<>();
-        listaAgentes.addAll(getAgentsList(AgentConfig.TRUCK_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.TRANSPORTER_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.DISTRIBUTION_AREA_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.DONOR_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG));
+        listaAgentes.addAll(getAgentsList(agentConfig.TRUCK_CONFIG));
+        listaAgentes.addAll(getAgentsList(agentConfig.TRANSPORTER_CONFIG));
+        listaAgentes.addAll(getAgentsList(agentConfig.DISTRIBUTION_AREA_CONFIG));
+        listaAgentes.addAll(getAgentsList(agentConfig.DONOR_CONFIG));
+        listaAgentes.addAll(getAgentsList(agentConfig.COLLECTION_PLACE_CONFIG));
 
         Agent targetAgent = listaAgentes.stream()
                 .filter(agent -> agent.getLocalName().equals(name))
@@ -110,12 +186,12 @@ public class DFHelper extends Agent {
                 .orElse(null);
         return Objects.nonNull(targetAgent) ? targetAgent : null;
         // if (Objects.isNull(targetAgent)){
-        // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
+        // targetAgent = getAgentsList(agentConfig.TRANSPORTER_CONFIG).stream()
         // .filter(agent -> agent.getLocalName().equals(name))
         // .findFirst()
         // .orElse(null);
         // }
-        // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
+        // targetAgent = getAgentsList(agentConfig.TRANSPORTER_CONFIG).stream()
         // .filter(agent -> agent.getLocalName().equals(name))
         // .findFirst()
         // .orElse(null);
@@ -169,39 +245,107 @@ public class DFHelper extends Agent {
     }
 
     public void BR_UpdateAgentState(Agent agente) {
-        MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
-                MessageTemplate.MatchConversationId(IC_UPDATE_AGENT_STATE));
-
-        agente.addBehaviour(new AchieveREResponder(agente, template) {
-            protected ACLMessage prepareResponse(ACLMessage request) throws NotUnderstoodException, RefuseException {
-                Boolean enable = Boolean.parseBoolean(request.getContent());
+        MessageTemplate template = MESSAGE_TEMPLATE_UPDATE_AGENT_STATE;
+        agente.addBehaviour(new AchieveREResponder(this, template) {
+            protected ACLMessage prepareResponse(ACLMessage request) {
+                ACLMessage reply = request.createReply();
+                println(agente, request);
                 if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+                        agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
                     // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.TRUCK_CONFIG.getClassRoute())) {
+                        agentConfig.TRUCK_CONFIG.getClassRoute())) {
                     Truck agenteParse = (Truck) agente;
-                    agenteParse.setEnabled(enable);
+                    agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+                        agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
                     Transporter agenteParse = (Transporter) agente;
-                    agenteParse.setEnabled(enable);
+                    agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+                        agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
                     DistributionArea agenteParse = (DistributionArea) agente;
-                    agenteParse.setEnabled(enable);
+                    agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.DONOR_CONFIG.getClassRoute())) {
+                        agentConfig.DONOR_CONFIG.getClassRoute())) {
                     Donor agenteParse = (Donor) agente;
-                    agenteParse.setEnabled(enable);
+                    agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+                        agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
                     CollectionPlace agenteParse = (CollectionPlace) agente;
-                    agenteParse.setEnabled(enable);
+                    agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 }
-                return request.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                return reply;
             }
         });
+
+        // agente.addBehaviour(new AchieveREResponder(agente, template) {
+
+        // @Override
+        // protected ACLMessage prepareResponse(ACLMessage request) throws
+        // NotUnderstoodException, RefuseException {
+        // ACLMessage reply = request.createReply();
+        // reply.setPerformative(ACLMessage.INFORM);
+        // Boolean enable = Boolean.parseBoolean(request.getContent());
+        // if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+        // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.TRUCK_CONFIG.getClassRoute())) {
+        // Truck agenteParse = (Truck) agente;
+        // agenteParse.setEnabled(enable);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+        // Transporter agenteParse = (Transporter) agente;
+        // agenteParse.setEnabled(enable);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+        // DistributionArea agenteParse = (DistributionArea) agente;
+        // agenteParse.setEnabled(enable);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.DONOR_CONFIG.getClassRoute())) {
+        // Donor agenteParse = (Donor) agente;
+        // agenteParse.setEnabled(enable);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+        // CollectionPlace agenteParse = (CollectionPlace) agente;
+        // agenteParse.setEnabled(enable);
+        // }
+        // return reply;
+        // }
+
+        // // protected ACLMessage prepareResponse(ACLMessage request) throws
+        // // NotUnderstoodException, RefuseException {
+        // // System.out.println(282);
+        // // Boolean enable = Boolean.parseBoolean(request.getContent());
+        // // if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+        // // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
+        // // } else if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.TRUCK_CONFIG.getClassRoute())) {
+        // // Truck agenteParse = (Truck) agente;
+        // // agenteParse.setEnabled(enable);
+        // // } else if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+        // // Transporter agenteParse = (Transporter) agente;
+        // // agenteParse.setEnabled(enable);
+        // // } else if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+        // // DistributionArea agenteParse = (DistributionArea) agente;
+        // // agenteParse.setEnabled(enable);
+        // // } else if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.DONOR_CONFIG.getClassRoute())) {
+        // // Donor agenteParse = (Donor) agente;
+        // // agenteParse.setEnabled(enable);
+        // // } else if (Objects.equals(agente.getClass().getName(),
+        // // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+        // // CollectionPlace agenteParse = (CollectionPlace) agente;
+        // // agenteParse.setEnabled(enable);
+        // // }
+        // // request.setPerformative(ACLMessage.SUBSCRIBE);
+        // // return request.createReply();
+        // // }
+        // });
 
         // agente.addBehaviour(new ContractNetResponder(agente, template) {
         // protected ACLMessage handleCfp(ACLMessage cfp) {
@@ -216,31 +360,31 @@ public class DFHelper extends Agent {
         // return reply;
         // }
         // // protected ACLMessage handleRequest(ACLMessage request) {
-        // // System.out.println("Llegó al responder");
-        // // if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
-        // // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.TRUCK_CONFIG.getClassRoute())) {
-        // // Truck agenteParse = (Truck) agente;
-        // // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
-        // // Transporter agenteParse = (Transporter) agente;
-        // // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
-        // // DistributionArea agenteParse = (DistributionArea) agente;
-        // // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.DONOR_CONFIG.getClassRoute())) {
-        // // Donor agenteParse = (Donor) agente;
-        // // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // AgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
-        // // CollectionPlace agenteParse = (CollectionPlace) agente;
-        // // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // // }
+        // System.out.println("Llegó al responder");
+        // if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+        // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.TRUCK_CONFIG.getClassRoute())) {
+        // Truck agenteParse = (Truck) agente;
+        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+        // Transporter agenteParse = (Transporter) agente;
+        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+        // DistributionArea agenteParse = (DistributionArea) agente;
+        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.DONOR_CONFIG.getClassRoute())) {
+        // Donor agenteParse = (Donor) agente;
+        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
+        // } else if (Objects.equals(agente.getClass().getName(),
+        // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+        // CollectionPlace agenteParse = (CollectionPlace) agente;
+        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
+        // }
         // // ACLMessage response = request.createReply();
         // // response.setPerformative(ACLMessage.INFORM);
         // // return response;

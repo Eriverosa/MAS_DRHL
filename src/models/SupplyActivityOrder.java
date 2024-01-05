@@ -3,6 +3,8 @@ package src.models;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import src.commons.ParametersConfig;
+
 public class SupplyActivityOrder {
     // CARGA
     private long horaInicioViajeCarga, tiempoViajeCarga, horaLlegadaViajeCarga, horaInicioCarga, tiempoCarga,
@@ -20,6 +22,7 @@ public class SupplyActivityOrder {
     // tiempoViajeFinActividad, horaFinCarga;
     private String pointNameSupplyActivityProposed, pointNameSupplyActivityRequired,
             pointNameSupplyActivityTransportation;
+    private String status;
     // private long horaSiguienteRequerimiento;
 
     public SupplyActivityOrder(SupplyActivity supplyActivity) {
@@ -41,6 +44,7 @@ public class SupplyActivityOrder {
         MaterialStock materialStock = supplyActivity.getSupplyActivityProposed().getMaterialStock();
         this.materialStock = materialStock
                 .getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
+        this.status = ParametersConfig.STATE_SUPPLY_ACTIVITY_PENDING;
     }
 
     public String toString(boolean prettyFormat) {
@@ -179,6 +183,14 @@ public class SupplyActivityOrder {
 
     public void setPointNameSupplyActivityTransportation(String pointNameSupplyActivityTransportation) {
         this.pointNameSupplyActivityTransportation = pointNameSupplyActivityTransportation;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }

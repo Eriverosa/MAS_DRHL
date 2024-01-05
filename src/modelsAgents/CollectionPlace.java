@@ -9,18 +9,34 @@ import java.util.Vector;
 
 import com.google.gson.Gson;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.FSMBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.FIPANames;
+import jade.domain.FIPAAgentManagement.FailureException;
+import jade.domain.FIPAAgentManagement.NotUnderstoodException;
+import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetInitiator;
-import src.commons.AgentConfig;
+import jade.proto.ContractNetResponder;
+import jade.proto.ProposeResponder;
+import jade.proto.SimpleAchieveREResponder;
+import jade.proto.SubscriptionResponder;
+import jade.proto.TwoPhResponder;
+// import src.commons.AgentConfig;
 import src.models.MaterialStock;
 import src.models.SupplyActivityProposed;
 import src.models.SupplyActivityTransportation;
 import src.models.SupplyActivityRequired;
 import src.models.SupplyActivity;
 import src.models.Ubication;
+import src.commons.AgentConfigOld;
+import src.behaviours.SimpleResponder;
+import src.commons.AgentConfig;
 import src.commons.ParametersConfig;
 
 public class CollectionPlace extends Agent {
@@ -31,46 +47,25 @@ public class CollectionPlace extends Agent {
     private Ubication ubication;
     private SupplyActivity supplyActivity;
     private ArrayList<SupplyActivity> pendingSupplyActivityList;
-    private ArrayList<SupplyActivity> supplyActivitiesList = new ArrayList<>();
+    private ArrayList<SupplyActivity> supplyActivitiesList;
+    private ArrayList<Integer> listTest;
+    private AgentConfig agentConfig;
+
     private long initTime;
-    // private RequiredSupply requiredSupply;
-    // private ProposedSupply proposedSupply;
-
-    // public RequiredSupply getRequiredSupply() {
-    // return requiredSupply;
-    // }
-
-    // public void setRequiredSupply(RequiredSupply requiredSupply) {
-    // this.requiredSupply = requiredSupply;
-    // }
-
-    public Ubication getUbication() {
-        return ubication;
-    }
-
-    public void setUbication(Ubication ubication) {
-        this.ubication = ubication;
-    }
-
-    public Integer getPoblacion() {
-        return poblacion;
-    }
-
-    public void setPoblacion(Integer poblacion) {
-        this.poblacion = poblacion;
-    }
-
-    public void setMaterialStock(MaterialStock materialStock) {
-        this.materialStock = materialStock;
-    }
 
     @Override
     protected void setup() {
+        // listTest = new ArrayList<>();
+        // listTest.add(1);
+        agentConfig = new AgentConfig();
+        pendingSupplyActivityList = new ArrayList<>();
+        supplyActivitiesList = new ArrayList<>();
         ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
-        this.cargarInformacionAgente(listaArgumentos);
+        cargarInformacionAgente(listaArgumentos);
         // RESPONDERS
         DF_HELPER.BR_UpdateAgentState(this);
-        this.BR_InitializeSimulation();
+        BR_RequestInitializatorSimulation();
+        BR_InitializeSimulation();
         // INITIATORS
         DF_HELPER.registrarServicio(this);
         DF_HELPER.BI_CreacionFinalizada(this);
@@ -91,65 +86,97 @@ public class CollectionPlace extends Agent {
         this.setMaterialStock(new MaterialStock(listStockMaterial));
     }
 
+    public void BR_RequestInitializatorSimulation() {
+        // doWait(1000);
+        // DF_HELPER.waitTime();
+        MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_REQUEST_INITIALIZATOR_SIMULATION;
+        addBehaviour(new ContractNetResponder(this, template) {
+            protected ACLMessage handleCfp(ACLMessage cfp) {
+                DF_HELPER.println(myAgent, cfp);
+                ACLMessage inform = cfp.createReply();
+                inform.setPerformative(ACLMessage.PROPOSE);
+                inform.setContent("1");
+                return inform;
+            }
+
+
+            protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
+                DF_HELPER.println(myAgent, accept);
+                ACLMessage reply = accept.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                return reply;
+            }
+
+            protected void handleRejectProposal(ACLMessage cfp, ACLMessage propose, ACLMessage reject) {
+                DF_HELPER.println(myAgent, reject);
+            }
+        });
+    }
+
     public void BR_InitializeSimulation() {
-        MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
-                MessageTemplate.MatchConversationId(DF_HELPER.IC_INITIALIZE_SIMULATION));
-
-        this.addBehaviour(new AchieveREResponder(this, template) {
-            protected ACLMessage handleRequest(ACLMessage request) {
-                DF_HELPER.println(this.myAgent, "Llega la solicitud para iniciar");
-                ACLMessage agree = request.createReply();
-                agree.setPerformative(getEnabled() ? ACLMessage.AGREE : ACLMessage.REFUSE);
-                return agree;
+        MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_INITIALIZE_SIMULATION;
+        this.addBehaviour(new SimpleResponder(this, template) {
+            @Override
+            protected void handleAclMessage(ACLMessage msg) {
+                DF_HELPER.println(myAgent, msg);
+                BI_ConsultRequiredSupply();
             }
-
-            protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
-                DF_HELPER.println("Inicializa simulacion");
-                supplyActivity = new SupplyActivity();
-                supplyActivitiesList = new ArrayList<>();
-                pendingSupplyActivityList = new ArrayList<>();
-                initTime = Long.parseLong(request.getContent());
-                try {
-                    Thread.sleep(1000);
-                    BI_ConsultRequiredSupply();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
         });
     }
 
     public void BI_ConsultRequiredSupply() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY);
-        for (Agent agent : DF_HELPER.getAgentsList(AgentConfig.DISTRIBUTION_AREA_CONFIG)) {
+        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.DISTRIBUTION_AREA_CONFIG)) {
             msg.addReceiver(agent.getAID());
         }
         msg.setContent(String.valueOf(this.initTime));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
-            ArrayList<SupplyActivity> pendingSupplyActivityList;
+            protected ArrayList<SupplyActivity> pendingSupplyActivityList;
 
-            @Override
-            public void onStart() {
-                this.pendingSupplyActivityList = getPendingSupplyActivityList();
-                super.onStart();
+            public void getValues() {
+                pendingSupplyActivityList = getPendingSupplyActivityList();
             }
 
+            @Override
             protected void handleAllResponses(Vector responses, Vector acceptances) {
+                getValues();
                 ArrayList<ACLMessage> responsesList = new ArrayList<ACLMessage>(responses);
                 responsesList.removeIf(message -> message.getPerformative() != ACLMessage.PROPOSE);
-                orderRequireSupplyObj(responsesList);
-                for (ACLMessage aclMessage : responsesList) {
-                    ACLMessage reply = aclMessage.createReply();
-                    reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                    acceptances.addElement(reply);
-                    SupplyActivity supplyActivity = new SupplyActivity();
-                    supplyActivity.setSupplyActivityRequired(new Gson()
-                            .fromJson(aclMessage.getContent(), SupplyActivityRequired.class));
-                    this.pendingSupplyActivityList.add(supplyActivity);
+                if (!responsesList.isEmpty()) {
+                    orderRequireSupplyObj(responsesList);
+                    for (ACLMessage aclMessage : responsesList) {
+                        ACLMessage reply = aclMessage.createReply();
+                        SupplyActivityRequired supplyActivityRequired = new Gson().fromJson(aclMessage.getContent(),
+                                SupplyActivityRequired.class);
+                        DF_HELPER.println(myAgent, Boolean.toString(supplyActivityRequired.getMaterialStock()
+                                .getNeedHelp(supplyActivityRequired.getCantidadPersonas())));
+                        DF_HELPER.println(myAgent, supplyActivityRequired.getMaterialStock().toString());
+                        System.out.println(supplyActivityRequired.getMaterialStock()
+                                .getNeedHelp(supplyActivityRequired.getCantidadPersonas()));
+                        SupplyActivity supplyActivity = new SupplyActivity();
+                        supplyActivity.setSupplyActivityRequired(
+                                new Gson().fromJson(aclMessage.getContent(), SupplyActivityRequired.class));
+                        this.pendingSupplyActivityList.add(supplyActivity);
+                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        // if (supplyActivityRequired.getMaterialStock()
+                        // .getNeedHelp(supplyActivityRequired.getCantidadPersonas())) {
+                        // SupplyActivity supplyActivity = new SupplyActivity();
+                        // supplyActivity.setSupplyActivityRequired(
+                        // new Gson().fromJson(aclMessage.getContent(), SupplyActivityRequired.class));
+                        // this.pendingSupplyActivityList.add(supplyActivity);
+                        // reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        // } else {
+                        // reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                        // }
+                        acceptances.addElement(reply);
+                    }
+                } else {
+                    DF_HELPER.println(myAgent,
+                            "No hay " + AgentConfigOld.DISTRIBUTION_AREA_CONFIG.getClassName()
+                                    + " que puedan realizar el trabajo");
                 }
+
             }
 
             protected void handleInform(ACLMessage inform) {
@@ -159,10 +186,15 @@ public class CollectionPlace extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
+                setPendingSupplyActivityList(this.pendingSupplyActivityList);
+                for (SupplyActivity supply : this.pendingSupplyActivityList) {
+                    System.out.println(supply.toString(true));
+                }
                 F_SetActualSupplyActivity();
                 return 0;
             }
         });
+
     }
 
     public void F_SetActualSupplyActivity() {
@@ -178,8 +210,9 @@ public class CollectionPlace extends Agent {
     public void BI_ConsultProposedSupply() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_PROPOSED_SUPPLY);
+
         msg.setContent(new Gson().toJson(supplyActivity.getSupplyActivityRequired()));
-        for (Agent agent : DF_HELPER.getAgentsList(AgentConfig.DONOR_CONFIG)) {
+        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.DONOR_CONFIG)) {
             msg.addReceiver(agent.getAID());
         }
         this.addBehaviour(new ContractNetInitiator(this, msg) {
@@ -194,20 +227,23 @@ public class CollectionPlace extends Agent {
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
                 responsesList.removeIf(message -> message.getPerformative() != ACLMessage.PROPOSE);
-                orderProposedSupplyObj(responsesList);
-                for (ACLMessage aclMessage : responsesList) {
-                    ACLMessage reply = aclMessage.createReply();
-                    if (responsesList.indexOf(aclMessage) == 0) {
-                        System.out.println("ACEPT");
-                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                        SupplyActivityProposed proposedSupply = new Gson().fromJson(aclMessage.getContent(),
-                                SupplyActivityProposed.class);
-                        this.supplyActivity.setSupplyActivityProposed(proposedSupply);
-                    } else {
-                        System.out.println("REJECT");
-                        reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                if (!responsesList.isEmpty()) {
+                    orderProposedSupplyObj(responsesList);
+                    for (ACLMessage aclMessage : responsesList) {
+                        ACLMessage reply = aclMessage.createReply();
+                        if (responsesList.indexOf(aclMessage) == 0) {
+                            reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                            SupplyActivityProposed proposedSupply = new Gson().fromJson(aclMessage.getContent(),
+                                    SupplyActivityProposed.class);
+                            this.supplyActivity.setSupplyActivityProposed(proposedSupply);
+                        } else {
+                            reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                        }
+                        acceptances.addElement(reply);
                     }
-                    acceptances.addElement(reply);
+                } else {
+                    DF_HELPER.println(myAgent,
+                            "No hay " + AgentConfigOld.DONOR_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
             }
 
@@ -217,7 +253,6 @@ public class CollectionPlace extends Agent {
 
             @Override
             public int onEnd() {
-                System.out.println(this.supplyActivity.getSupplyActivityProposed());
                 if (Objects.nonNull(this.supplyActivity.getSupplyActivityProposed())) {
                     BI_ConsultTransport();
                 } else {
@@ -232,7 +267,7 @@ public class CollectionPlace extends Agent {
     public void BI_ConsultTransport() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_TRANSPORTER);
-        for (Agent agent : DF_HELPER.getAgentsList(AgentConfig.TRANSPORTER_CONFIG)) {
+        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.TRANSPORTER_CONFIG)) {
             msg.addReceiver(agent.getAID());
         }
         this.addBehaviour(new ContractNetInitiator(this, msg) {
@@ -247,12 +282,19 @@ public class CollectionPlace extends Agent {
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
                 responsesList.removeIf(message -> message.getPerformative() != ACLMessage.PROPOSE);
-                for (ACLMessage aclMessage : responsesList) {
-                    ACLMessage reply = aclMessage.createReply();
-                    reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                    this.truckNameList.addAll(new Gson().fromJson(aclMessage.getContent(), ArrayList.class));
-                    acceptances.addElement(reply);
+                if (!responsesList.isEmpty()) {
+                    for (ACLMessage aclMessage : responsesList) {
+                        ACLMessage reply = aclMessage.createReply();
+                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        this.truckNameList.addAll(new Gson().fromJson(aclMessage.getContent(), ArrayList.class));
+                        acceptances.addElement(reply);
+                    }
+                } else {
+                    DF_HELPER.println(myAgent,
+                            "No hay " + AgentConfigOld.TRANSPORTER_CONFIG.getClassName()
+                                    + " que puedan realizar el trabajo");
                 }
+
             }
 
             protected void handleInform(ACLMessage inform) {
@@ -262,7 +304,7 @@ public class CollectionPlace extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                if (!truckNameList.isEmpty()) {
+                if (!this.truckNameList.isEmpty()) {
                     BI_ConsultFreight(this.truckNameList);
                 } else {
                     F_SetActualSupplyActivity();
@@ -291,20 +333,26 @@ public class CollectionPlace extends Agent {
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<>(responses);
                 responsesList.removeIf(message -> message.getPerformative() != ACLMessage.PROPOSE);
-                orderProposedTransportation(responsesList, ParametersConfig.ASC_STRING);
-                for (ACLMessage aclMessage : responsesList) {
-                    ACLMessage reply = aclMessage.createReply();
-                    if (responsesList.indexOf(aclMessage) == 0) {
-                        SupplyActivityTransportation proposedTransportation = new Gson().fromJson(
-                                aclMessage.getContent(),
-                                SupplyActivityTransportation.class);
-                        this.supplyActivity.setSupplyActivityTransportation(proposedTransportation);
-                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-                    } else {
-                        reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                if (!responsesList.isEmpty()) {
+                    orderProposedTransportation(responsesList, ParametersConfig.ASC_STRING);
+                    for (ACLMessage aclMessage : responsesList) {
+                        ACLMessage reply = aclMessage.createReply();
+                        if (responsesList.indexOf(aclMessage) == 0) {
+                            SupplyActivityTransportation proposedTransportation = new Gson().fromJson(
+                                    aclMessage.getContent(),
+                                    SupplyActivityTransportation.class);
+                            this.supplyActivity.setSupplyActivityTransportation(proposedTransportation);
+                            reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        } else {
+                            reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+                        }
+                        acceptances.addElement(reply);
                     }
-                    acceptances.addElement(reply);
+                } else {
+                    DF_HELPER.println(myAgent,
+                            "No hay " + AgentConfigOld.TRUCK_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
+
             }
 
             protected void handleInform(ACLMessage inform) {
@@ -324,6 +372,7 @@ public class CollectionPlace extends Agent {
         this.supplyActivity.generateSupplyActivityOrder();
         this.supplyActivitiesList.add(this.supplyActivity);
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        System.out.println(this.supplyActivity);
         msg.setConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY);
         msg.addReceiver(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityRequired().getAgentName()).getAID());
         msg.addReceiver(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityProposed().getAgentName()).getAID());
@@ -348,8 +397,7 @@ public class CollectionPlace extends Agent {
     public void BI_EndSimulation() {
         DF_HELPER.println("END SIMULATION");
         Agent agenteReceiver = DF_HELPER.getRegisteredAdministrador();
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setConversationId(DF_HELPER.IC_END_SIMULATION);
+        ACLMessage msg = DF_HELPER.ACL_MESSAGE_END_SIMULATION;
         msg.addReceiver(agenteReceiver.getAID());
         msg.setContent(new Gson().toJson(this.supplyActivitiesList));
         send(msg);
@@ -480,4 +528,39 @@ public class CollectionPlace extends Agent {
         this.initTime = initTime;
     }
 
+    public Ubication getUbication() {
+        return ubication;
+    }
+
+    public void setUbication(Ubication ubication) {
+        this.ubication = ubication;
+    }
+
+    public Integer getPoblacion() {
+        return poblacion;
+    }
+
+    public void setPoblacion(Integer poblacion) {
+        this.poblacion = poblacion;
+    }
+
+    public void setMaterialStock(MaterialStock materialStock) {
+        this.materialStock = materialStock;
+    }
+
+    public ArrayList<SupplyActivity> getSupplyActivitiesList() {
+        return supplyActivitiesList;
+    }
+
+    public void setSupplyActivitiesList(ArrayList<SupplyActivity> supplyActivitiesList) {
+        this.supplyActivitiesList = supplyActivitiesList;
+    }
+
+    public ArrayList<Integer> getListTest() {
+        return listTest;
+    }
+
+    public void setListTest(ArrayList<Integer> listTest) {
+        this.listTest = listTest;
+    }
 }

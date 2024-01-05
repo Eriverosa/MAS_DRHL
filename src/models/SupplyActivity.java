@@ -1,6 +1,7 @@
 package src.models;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class SupplyActivity {
     private SupplyActivityRequired supplyActivityRequired;
@@ -8,18 +9,15 @@ public class SupplyActivity {
     private SupplyActivityTransportation supplyActivityTransportation;
     private SupplyActivityOrder supplyActivityOrder;
 
-    
     public SupplyActivity() {
     }
 
     // public SupplyActivity(SupplyActivityRequired supplyActivityRequired) {
-    //     this.supplyActivityRequired = supplyActivityRequired;
-    //     this.supplyActivityProposed = null;
-    //     this.supplyActivityTransportation = null;
-    //     this.supplyActivityOrder = null;
+    // this.supplyActivityRequired = supplyActivityRequired;
+    // this.supplyActivityProposed = null;
+    // this.supplyActivityTransportation = null;
+    // this.supplyActivityOrder = null;
     // }
-
-
 
     public SupplyActivityRequired getSupplyActivityRequired() {
         return supplyActivityRequired;
@@ -53,10 +51,20 @@ public class SupplyActivity {
         this.supplyActivityOrder = new SupplyActivityOrder(this);
     }
 
-    @Override
-    public String toString() {
-        Gson gson = new Gson();
+    // @Override
+    public String toString(boolean prettyFormat) {
+        Gson gson;
+        if (prettyFormat) {
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        } else {
+            gson = new Gson();
+        }
         return gson.toJson(this);
     }
+
+    // public String toString() {
+    // Gson gson = new Gson();
+    // return gson.toJson(this);
+    // }
 
 }

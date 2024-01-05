@@ -4,17 +4,92 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.FIPANames;
+
+import java.util.Vector;
+
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.proto.AchieveREInitiator;
 import jade.proto.ContractNetInitiator;
+import jade.proto.ContractNetResponder;
+import src.commons.ParametersConfig;
 
 public class ContractNetInitiatorAgent extends Agent {
+    private final DFHelper DF_HELPER = DFHelper.getInstance();
+
+    protected void mensaje(ACLMessage cfp) {
+        this.addBehaviour(new AchieveREInitiator(this, cfp) {
+            protected void handleInform(ACLMessage inform) {
+                System.out.println("Respuesta del Responder: " + inform.getContent());
+            }
+
+            @Override
+            public int onEnd() {
+                mensaje(cfp);
+                // TODO Auto-generated method stub
+                return super.onEnd();
+            }
+            // protected void handleAllResultNotifications(
+            // @SuppressWarnings("rawtypes") java.util.Vector notifications) {
+            // System.out.println("Conversación completada.");
+            // }
+        });
+    }
+
     protected void setup() {
+
         System.out.println("ContractNetInitiatorAgent " + getAID().getName() + " is ready.");
-        int test = 3;
+        int test = 9;
         ACLMessage cfp = new ACLMessage();
         cfp.addReceiver(new AID("Responder_0", AID.ISLOCALNAME));
+        if (ParametersConfig.N_TEST == 7) {
+            ACLMessage msg = DF_HELPER.ACL_MESSAGE_INITIALIZE_SIMULATION;
+            msg.addReceiver(new AID("Responder_0", AID.ISLOCALNAME));
+            for (int i = 0; i < 10; i++) {
+                DF_HELPER.waitTime();
+                // doWait();
+                send(msg);
+            }
+        }
+        if (test == 5) {
+            cfp.setPerformative(ACLMessage.INFORM);
+            cfp.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
+            this.addBehaviour(new AchieveREInitiator(this, cfp) {
+                // protected void handleInform(ACLMessage inform) {
+                // System.out.println("Respuesta del Responder: " + inform.getContent());
+                // }
+                protected void handleAllResultNotifications(Vector notifications) {
+                    System.out.println("Conversación completada.");
+                }
+
+                @Override
+                public int onEnd() {
+                    mensaje(cfp);
+                    // TODO Auto-generated method stub
+                    return super.onEnd();
+                }
+
+            });
+
+        }
+        if (test == 4) {
+            cfp.setPerformative(ACLMessage.INFORM);
+            cfp.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
+            // ACLMessage inform = new ACLMessage(ACLMessage.INFORM);
+            cfp.setContent("Este es un mensaje de informacion desde el Initiator.");
+            this.addBehaviour(new ContractNetInitiator(this, cfp) {
+                protected void handleAllResponses(java.util.Vector responses, java.util.Vector acceptances) {
+                    System.out.println("Llegaron todas las respuestas");
+                    for (Object response : responses) {
+                        ACLMessage reply = ((ACLMessage) response).createReply();
+                        reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                        reply.setContent("Respuesta del Initiator.");
+                        acceptances.addElement(reply);
+                    }
+                }
+            });
+        }
         if (test == 3) {
             for (int i = 0; i < 5; i++) {
                 cfp.setPerformative(ACLMessage.INFORM);
