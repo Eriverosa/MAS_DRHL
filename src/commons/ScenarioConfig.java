@@ -10,24 +10,23 @@ import src.models.SupplyActivity;
 
 public class ScenarioConfig {
     public final List<CreationScenarioConfig> creationScenarioConfigList = new ArrayList<>();
-    public final AgentConfig agentConfig;
+    // public final AgentConfig agentConfig;
 
     public ScenarioConfig() {
-        this.agentConfig = new AgentConfig();
-        creationScenarioConfigList.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 1,
+        creationScenarioConfigList.add(new CreationScenarioConfig("ESCENARIO_INICIAL", 20,
                 Arrays.asList(
-                        new BehaviourCreationScenarioConfig(this.agentConfig.TRANSPORTER_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.TRUCK_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.DONOR_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("PRIMER_SISMO", 1,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(this.agentConfig.TRANSPORTER_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.TRUCK_CONFIG, true, 100),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.DONOR_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
-                        new BehaviourCreationScenarioConfig(this.agentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
+                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
+        // creationScenarioConfigList.add(new CreationScenarioConfig("PRIMER_SISMO", 1,
+        //         Arrays.asList(
+        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 100),
+        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
+        //                 new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 1),
+        //                 new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 1),
+        //                 new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 100))));
     }
 
     public CreationScenarioConfig getNextCreationScenarioConfigEnable(String desiredState) {
@@ -70,7 +69,7 @@ public class ScenarioConfig {
             this.enable = true;
             this.nIterations = nIterations;
             this.behaviourCreationScnearionConfigList = behaviourCreationScnearionConfigList;
-            this.nCurrIterations = 0;
+            this.nCurrIterations = 1;
         }
 
         public String getStateIteration() {
@@ -94,7 +93,7 @@ public class ScenarioConfig {
         }
 
         public boolean getIterationsPending() {
-            return this.nCurrIterations < this.nIterations;
+            return this.nCurrIterations <= this.nIterations;
         }
 
         public String getName() {

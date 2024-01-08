@@ -46,7 +46,7 @@ public class FileGenerator {
                         String.valueOf(supplyActivityOrder.getPointNameSupplyActivityProposed()),
                         String.valueOf(supplyActivityOrder.getPointNameSupplyActivityRequired()),
                         String.valueOf(supplyActivityOrder.getPointNameSupplyActivityTransportation()),
-                        String.valueOf(supplyActivity.getSupplyActivityRequired().getCantidadPersonas()),
+                        String.valueOf(supplyActivity.getSupplyActivityRequired().getCantidadPersonaRequired()),
                         String.valueOf(supplyActivityOrder.getMaterialStock().getTotalAmountHelpByPerson())
                 };
                 writer.writeNext(row);

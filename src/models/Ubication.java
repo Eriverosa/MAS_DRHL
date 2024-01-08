@@ -1,25 +1,25 @@
 package src.models;
 
 public class Ubication implements Cloneable{
-    Integer latitud, longitud;
+    Double latitud, longitud;
 
-    public Integer getLatitud() {
+    public Double getLatitud() {
         return latitud;
     }
 
-    public void setLatitud(Integer latitud) {
+    public void setLatitud(Double latitud) {
         this.latitud = latitud;
     }
 
-    public Integer getLongitud() {
+    public Double getLongitud() {
         return longitud;
     }
 
-    public void setLongitud(Integer longitud) {
+    public void setLongitud(Double longitud) {
         this.longitud = longitud;
     }
 
-    public Ubication(Integer latitud, Integer longitud) {
+    public Ubication(Double latitud, Double longitud) {
         this.latitud = latitud;
         this.longitud = longitud;
     }

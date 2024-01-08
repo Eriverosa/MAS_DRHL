@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -46,13 +47,12 @@ public class Administrator extends Agent {
     private long currExecutionTime;
     private boolean first = true;
     private ScenarioConfig scenarioConfig;
-    private AgentConfig agentConfig;
+    // private AgentConfig agentConfig;
     private CreationScenarioConfig currCreationScenarioConfig;
 
     @Override
     protected void setup() {
         this.scenarioConfig = new ScenarioConfig();
-        this.agentConfig = new AgentConfig();
         DF_HELPER.registrarServicio(this);
         this.BR_CreacionFinalizada();
         this.BR_EndSimulation();
@@ -60,21 +60,19 @@ public class Administrator extends Agent {
     }
 
     public void loadDataGenerateAgent() {
-
-        // CreationAgentConfig currAgentConfig = this.agentConfig.
-        CreationAgentConfig currAgentConfig = this.agentConfig.getNextCreationAgentConfigEnable();
+        CreationAgentConfig currAgentConfig = AgentConfig.getNextCreationAgentConfigEnable();
         if (!Objects.isNull(currAgentConfig)) {
-            if (Objects.equals(currAgentConfig.getClassName(), this.agentConfig.TRANSPORTER_CONFIG.getClassName())) {
+            if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
                 this.crearAgentesTransporte();
-            } else if (Objects.equals(currAgentConfig.getClassName(), this.agentConfig.TRUCK_CONFIG.getClassName())) {
+            } else if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.TRUCK_CONFIG.getClassName())) {
                 this.crearAgentesCamiones();
-            } else if (Objects.equals(currAgentConfig.getClassName(), this.agentConfig.DONOR_CONFIG.getClassName())) {
+            } else if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.DONOR_CONFIG.getClassName())) {
                 this.crearAgentesDonador();
             } else if (Objects.equals(currAgentConfig.getClassName(),
-                    this.agentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                    AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
                 this.crearAgentesPuntoDistribucion();
             } else if (Objects.equals(currAgentConfig.getClassName(),
-                    this.agentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                    AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
                 this.crearAgentesLugarAcopio();
             } else {
                 System.out.println("Error");
@@ -90,8 +88,8 @@ public class Administrator extends Agent {
 
     public void F_UpdateState() {
         DF_HELPER.println(this, "PROCESS CHANGE STATE OF AGENTS");
-        List<Agent> listAgentsEnable = new ArrayList<>();
-        List<Agent> listAgentsDisable = new ArrayList<>();
+        ArrayList<Agent> listAgentsEnable = new ArrayList<>();
+        ArrayList<Agent> listAgentsDisable = new ArrayList<>();
         for (BehaviourCreationScenarioConfig behaviorConfig : this.currCreationScenarioConfig
                 .getBehaviourCreationScnearionConfigList()) {
 
@@ -105,14 +103,12 @@ public class Administrator extends Agent {
         this.BI_UpdateState(listAgentsEnable, listAgentsDisable, true);
     }
 
-    public void BI_UpdateState(List<Agent> listAgentsEnable, List<Agent> listAgentsDisable,
+    public void BI_UpdateState(ArrayList<Agent> listAgentsEnable, ArrayList<Agent> listAgentsDisable,
             boolean enabBoolean) {
-        List<Agent> listAgents = enabBoolean ? listAgentsEnable : listAgentsDisable;
+        ArrayList<Agent> listAgents = enabBoolean ? listAgentsEnable : listAgentsDisable;
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_UPDATE_AGENT_STATE;
         msg.setContent(Boolean.toString(enabBoolean));
-        for (Agent agent : listAgents) {
-            msg.addReceiver(agent.getAID());
-        }
+        DF_HELPER.addAllReceiver(msg, listAgents);
 
         addBehaviour(new AchieveREInitiator(this, msg) {
             protected void handleAllResponses(Vector responses) {
@@ -135,17 +131,16 @@ public class Administrator extends Agent {
 
     public void BI_UpdateTimeEvent() {
         DF_HELPER.println("UPDATE TIME EVENT");
-        // System.out.println(currCreationScenarioConfig);
-        this.currExecutionTime = (this.currCreationScenarioConfig.getnCurrIterations() == 0)
-                ? ParametersConfig.TIME_EXECUTION_INIT_MS
-                : (this.currExecutionTime + ParametersConfig.TIME_EXECUTION_ADD_MS);
+        this.currExecutionTime = (this.currCreationScenarioConfig.getnCurrIterations() == 1)
+                ? ParametersConfig.EXECUTION_INIT_TIME
+                : (this.currExecutionTime + ParametersConfig.EXECUTION_ADD_TIME);
+
+        ArrayList<Agent> agentsList = new ArrayList<>(DF_HELPER.getListRegisteredDistributionArea());
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_UPDATE_TIME_EVENT;
         msg.setContent(String.valueOf(currExecutionTime));
-        ArrayList<Agent> agentsList = new ArrayList<>();
-        agentsList.addAll(DF_HELPER.getListRegisteredDistributionArea());
-        for (Agent agent : agentsList) {
-            msg.addReceiver(agent.getAID());
-        }
+
+        DF_HELPER.addAllReceiver(msg, agentsList);
+
         this.addBehaviour(new AchieveREInitiator(this, msg) {
             @Override
             protected void handleAllResponses(Vector responses) {
@@ -163,20 +158,12 @@ public class Administrator extends Agent {
 
     public void BI_RequestInitializatorSimulation() {
         ArrayList<Agent> agentsList = new ArrayList<>(
-                DF_HELPER.getAgentsList(this.agentConfig.COLLECTION_PLACE_CONFIG));
+                DF_HELPER.getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG));
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION;
-        msg.clearAllReceiver();
-        for (Agent agent : agentsList) {
-            msg.addReceiver(agent.getAID());
-        }
-        doWait(1000);
+        DF_HELPER.addAllReceiver(msg, agentsList);
+
         addBehaviour(new ContractNetInitiator(this, msg) {
             String requestInitializatorName;
-
-            // @Override
-            // protected void handlePropose(ACLMessage propose, Vector acceptances) {
-            //     System.out.println("LN179");
-            // }
 
             protected void handleAllResponses(Vector responses, Vector acceptances) {
                 ArrayList<ACLMessage> responsesList = new ArrayList<ACLMessage>(responses);
@@ -214,8 +201,13 @@ public class Administrator extends Agent {
     }
 
     public void BI_InitializeSimulation(String nameAgent) {
+        DF_HELPER.println("SE INICIALIZA SIMULACION DE " + currCreationScenarioConfig.getName() + ", iteración "
+                + currCreationScenarioConfig.getnCurrIterations());
+        DF_HELPER.waitTime();
+        ArrayList<Agent> agentsList = new ArrayList<>();
+        agentsList.add(DF_HELPER.getAgent(nameAgent));
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_INITIALIZE_SIMULATION;
-        msg.addReceiver(DF_HELPER.getAgent(nameAgent).getAID());
+        DF_HELPER.addAllReceiver(msg, agentsList);
         msg.setContent(Long.toString((long) this.currExecutionTime));
         currCreationScenarioConfig.addNCurrIteration();
         send(msg);
@@ -240,13 +232,13 @@ public class Administrator extends Agent {
                 String jsonContent = msg.getContent();
                 ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new ArrayList<>(Arrays
                         .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
-                System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
+                currCreationScenario.getSupplyActivitiesList().addAll(supplyActivitiesListResponseArrayList);
+                // System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
                 if (currCreationScenario.getIterationsPending()) {
                     DF_HELPER.println("SIGUIENTE ITERACION");
                     BI_UpdateTimeEvent();
                 } else {
                     currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
-                    currCreationScenario.setSupplyActivitiesList(supplyActivitiesListResponseArrayList);
                     CreationScenarioConfig nextCreationScenario = scenarioConfig
                             .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
                     if (Objects.nonNull(nextCreationScenario)) {
@@ -262,41 +254,42 @@ public class Administrator extends Agent {
         });
 
         // this.addBehaviour(new SimpleResponder(this, template) {
-        //     CreationScenarioConfig currCreationScenario;
-        //     ScenarioConfig scenarioConfig;
+        // CreationScenarioConfig currCreationScenario;
+        // ScenarioConfig scenarioConfig;
 
-        //     public void setValues() {
-        //         scenarioConfig = getScenarioConfig();
-        //         currCreationScenario = getCurrCreationScenarioConfig();
-        //     }
+        // public void setValues() {
+        // scenarioConfig = getScenarioConfig();
+        // currCreationScenario = getCurrCreationScenarioConfig();
+        // }
 
-        //     @Override
-        //     protected void handleAclMessage(ACLMessage msg) {
-        //         DF_HELPER.println(myAgent, msg);
-        //         setValues();
-        //         String jsonContent = msg.getContent();
-        //         ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new ArrayList<>(Arrays
-        //                 .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
-        //         System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
-        //         if (currCreationScenario.getIterationsPending()) {
-        //             DF_HELPER.println("SIGUIENTE ITERACION");
-        //             BI_UpdateTimeEvent();
-        //         } else {
-        //             currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
-        //             currCreationScenario.setSupplyActivitiesList(supplyActivitiesListResponseArrayList);
-        //             CreationScenarioConfig nextCreationScenario = scenarioConfig
-        //                     .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
-        //             if (Objects.nonNull(nextCreationScenario)) {
-        //                 DF_HELPER.println("SIGUIENTE ESCENARIO " + nextCreationScenario.getName());
-        //                 currCreationScenario = nextCreationScenario;
-        //                 F_UpdateState();
-        //             } else {
-        //                 DF_HELPER.println("NO QUEDAN MAS ESCENARIO");
-        //                 F_PrintResults();
-        //             }
-        //         }
-        //         // BI_ConsultRequiredSupply();
-        //     }
+        // @Override
+        // protected void handleAclMessage(ACLMessage msg) {
+        // DF_HELPER.println(myAgent, msg);
+        // setValues();
+        // String jsonContent = msg.getContent();
+        // ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new
+        // ArrayList<>(Arrays
+        // .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
+        // System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
+        // if (currCreationScenario.getIterationsPending()) {
+        // DF_HELPER.println("SIGUIENTE ITERACION");
+        // BI_UpdateTimeEvent();
+        // } else {
+        // currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
+        // currCreationScenario.setSupplyActivitiesList(supplyActivitiesListResponseArrayList);
+        // CreationScenarioConfig nextCreationScenario = scenarioConfig
+        // .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
+        // if (Objects.nonNull(nextCreationScenario)) {
+        // DF_HELPER.println("SIGUIENTE ESCENARIO " + nextCreationScenario.getName());
+        // currCreationScenario = nextCreationScenario;
+        // F_UpdateState();
+        // } else {
+        // DF_HELPER.println("NO QUEDAN MAS ESCENARIO");
+        // F_PrintResults();
+        // }
+        // }
+        // // BI_ConsultRequiredSupply();
+        // }
         // });
     }
 
@@ -316,23 +309,24 @@ public class Administrator extends Agent {
         DF_HELPER.println("PRINT RESULTS");
         FileGenerator fileteGenerator = new FileGenerator();
         for (CreationScenarioConfig creationScenarioConfig : this.scenarioConfig.getCreationScenarioConfigList()) {
-            System.out.println(creationScenarioConfig);
-            System.out.println(creationScenarioConfig.getSupplyActivitiesList().size());
-            System.out.println("----");
+            // System.out.println(creationScenarioConfig);
+            // System.out.println(creationScenarioConfig.getSupplyActivitiesList().size());
+            // System.out.println("----");
             fileteGenerator.generateFile(creationScenarioConfig.getName(),
                     creationScenarioConfig.getSupplyActivitiesList());
         }
+        System.exit(0);
     }
 
     public void BR_CreacionFinalizada() {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_FINISHED_CREATION));
         addBehaviour(new AchieveREResponder(this, template) {
-            AgentConfig agentConfig;
+            // AgentConfig agentConfig;
             CreationAgentConfig currObj = null;
 
             public void setValues() {
-                agentConfig = getAgentConfig();
+                // agentConfig = getAgentConfig();
             }
 
             @Override
@@ -342,18 +336,18 @@ public class Administrator extends Agent {
                 System.out.println("Mensaje recibido de " + request.getSender().getLocalName());
                 Integer tipo = ACLMessage.AGREE;
                 // Integer numberEnabled = 0, initialCreated = 0;
-                if (Objects.equals(request.getContent(), agentConfig.TRANSPORTER_CONFIG.getClassName())) {
-                    currObj = agentConfig.TRANSPORTER_CONFIG;
-                } else if (Objects.equals(request.getContent(), agentConfig.TRUCK_CONFIG.getClassName())) {
-                    currObj = agentConfig.TRUCK_CONFIG;
+                if (Objects.equals(request.getContent(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+                    currObj = AgentConfig.TRANSPORTER_CONFIG;
+                } else if (Objects.equals(request.getContent(), AgentConfig.TRUCK_CONFIG.getClassName())) {
+                    currObj = AgentConfig.TRUCK_CONFIG;
                 } else if (Objects.equals(request.getContent(),
-                        agentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
-                    currObj = agentConfig.COLLECTION_PLACE_CONFIG;
+                        AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                    currObj = AgentConfig.COLLECTION_PLACE_CONFIG;
                 } else if (Objects.equals(request.getContent(),
-                        agentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
-                    currObj = agentConfig.DISTRIBUTION_AREA_CONFIG;
-                } else if (Objects.equals(request.getContent(), agentConfig.DONOR_CONFIG.getClassName())) {
-                    currObj = agentConfig.DONOR_CONFIG;
+                        AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                    currObj = AgentConfig.DISTRIBUTION_AREA_CONFIG;
+                } else if (Objects.equals(request.getContent(), AgentConfig.DONOR_CONFIG.getClassName())) {
+                    currObj = AgentConfig.DONOR_CONFIG;
                 } else {
                     System.out.println("No deberia ir acá");
                     System.exit(-1);
@@ -377,7 +371,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesTransporte() {
-        CreationAgentConfig configObject = agentConfig.TRANSPORTER_CONFIG;
+        CreationAgentConfig configObject = AgentConfig.TRANSPORTER_CONFIG;
         // ContainerController containerObject = TRANSPORTER_CONTAINER_CONTROLLER;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
@@ -401,7 +395,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesCamiones() {
-        CreationAgentConfig configObject = agentConfig.TRUCK_CONFIG;
+        CreationAgentConfig configObject = AgentConfig.TRUCK_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -454,7 +448,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesPuntoDistribucion() {
-        CreationAgentConfig configObject = agentConfig.DISTRIBUTION_AREA_CONFIG;
+        CreationAgentConfig configObject = AgentConfig.DISTRIBUTION_AREA_CONFIG;
 
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
@@ -484,7 +478,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesDonador() {
-        CreationAgentConfig configObject = agentConfig.DONOR_CONFIG;
+        CreationAgentConfig configObject = AgentConfig.DONOR_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -511,7 +505,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesLugarAcopio() {
-        CreationAgentConfig configObject = agentConfig.COLLECTION_PLACE_CONFIG;
+        CreationAgentConfig configObject = AgentConfig.COLLECTION_PLACE_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -569,7 +563,4 @@ public class Administrator extends Agent {
         return scenarioConfig;
     }
 
-    public AgentConfig getAgentConfig() {
-        return agentConfig;
-    }
 }

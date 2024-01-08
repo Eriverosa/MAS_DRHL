@@ -34,7 +34,7 @@ import src.models.SupplyActivityTransportation;
 import src.models.SupplyActivityRequired;
 import src.models.SupplyActivity;
 import src.models.Ubication;
-import src.commons.AgentConfigOld;
+// import src.commons.AgentConfigOld;
 import src.behaviours.SimpleResponder;
 import src.commons.AgentConfig;
 import src.commons.ParametersConfig;
@@ -49,15 +49,11 @@ public class CollectionPlace extends Agent {
     private ArrayList<SupplyActivity> pendingSupplyActivityList;
     private ArrayList<SupplyActivity> supplyActivitiesList;
     private ArrayList<Integer> listTest;
-    private AgentConfig agentConfig;
 
     private long initTime;
 
     @Override
     protected void setup() {
-        // listTest = new ArrayList<>();
-        // listTest.add(1);
-        agentConfig = new AgentConfig();
         pendingSupplyActivityList = new ArrayList<>();
         supplyActivitiesList = new ArrayList<>();
         ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
@@ -74,8 +70,8 @@ public class CollectionPlace extends Agent {
     public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
         this.enabled = true;
         // this.setPoblacion(Integer.parseInt((String) listaArgumentos.get(1)));
-        this.setUbication(new Ubication(Integer.parseInt((String) listaArgumentos.get(0)),
-                Integer.parseInt((String) listaArgumentos.get(1))));
+        this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(0)),
+                Double.parseDouble((String) listaArgumentos.get(1))));
         ArrayList<Integer> listStockMaterial = new ArrayList<>(
                 Arrays.asList(Integer.parseInt((String) listaArgumentos.get(7)),
                         Integer.parseInt((String) listaArgumentos.get(6)),
@@ -99,7 +95,6 @@ public class CollectionPlace extends Agent {
                 return inform;
             }
 
-
             protected ACLMessage handleAcceptProposal(ACLMessage cfp, ACLMessage propose, ACLMessage accept) {
                 DF_HELPER.println(myAgent, accept);
                 ACLMessage reply = accept.createReply();
@@ -116,9 +111,23 @@ public class CollectionPlace extends Agent {
     public void BR_InitializeSimulation() {
         MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_INITIALIZE_SIMULATION;
         this.addBehaviour(new SimpleResponder(this, template) {
+            // ArrayList<SupplyActivity> pendingSupplyActivityList;
+            // ArrayList<SupplyActivity> supplyActivitiesList;
+            // long initTime;
+
+            @Override
+            public void onStart() {
+                // pendingSupplyActivityList = getPendingSupplyActivityList();
+                // supplyActivitiesList = getSupplyActivitiesList();
+                // initTime = getInitTime();
+            }
+
             @Override
             protected void handleAclMessage(ACLMessage msg) {
                 DF_HELPER.println(myAgent, msg);
+                setInitTime((long) Long.valueOf(msg.getContent()));
+                setPendingSupplyActivityList(new ArrayList<SupplyActivity>());
+                setSupplyActivitiesList(new ArrayList<SupplyActivity>());
                 BI_ConsultRequiredSupply();
             }
         });
@@ -127,9 +136,7 @@ public class CollectionPlace extends Agent {
     public void BI_ConsultRequiredSupply() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY);
-        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.DISTRIBUTION_AREA_CONFIG)) {
-            msg.addReceiver(agent.getAID());
-        }
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.DISTRIBUTION_AREA_CONFIG));
         msg.setContent(String.valueOf(this.initTime));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             protected ArrayList<SupplyActivity> pendingSupplyActivityList;
@@ -173,7 +180,7 @@ public class CollectionPlace extends Agent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfigOld.DISTRIBUTION_AREA_CONFIG.getClassName()
+                            "No hay " + AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName()
                                     + " que puedan realizar el trabajo");
                 }
 
@@ -212,9 +219,9 @@ public class CollectionPlace extends Agent {
         msg.setConversationId(DF_HELPER.IC_CONSULT_PROPOSED_SUPPLY);
 
         msg.setContent(new Gson().toJson(supplyActivity.getSupplyActivityRequired()));
-        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.DONOR_CONFIG)) {
-            msg.addReceiver(agent.getAID());
-        }
+
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.DONOR_CONFIG));
+
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             SupplyActivity supplyActivity;
 
@@ -243,7 +250,7 @@ public class CollectionPlace extends Agent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfigOld.DONOR_CONFIG.getClassName() + " que puedan realizar el trabajo");
+                            "No hay " + AgentConfig.DONOR_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
             }
 
@@ -267,9 +274,8 @@ public class CollectionPlace extends Agent {
     public void BI_ConsultTransport() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_TRANSPORTER);
-        for (Agent agent : DF_HELPER.getAgentsList(agentConfig.TRANSPORTER_CONFIG)) {
-            msg.addReceiver(agent.getAID());
-        }
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.TRANSPORTER_CONFIG));
+
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             ArrayList<String> truckNameList;
 
@@ -291,7 +297,7 @@ public class CollectionPlace extends Agent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfigOld.TRANSPORTER_CONFIG.getClassName()
+                            "No hay " + AgentConfig.TRANSPORTER_CONFIG.getClassName()
                                     + " que puedan realizar el trabajo");
                 }
 
@@ -317,9 +323,12 @@ public class CollectionPlace extends Agent {
     public void BI_ConsultFreight(ArrayList<String> truckNameList) {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_REQUEST_FREIGHT);
-        for (String nameTruck : truckNameList) {
-            msg.addReceiver(DF_HELPER.getAgent(nameTruck).getAID());
+        ArrayList<Agent> agentList = new ArrayList<>();
+        for (String string : truckNameList) {
+            agentList.add(DF_HELPER.getAgent(string));
         }
+        DF_HELPER.addAllReceiver(msg, agentList);
+
         msg.setContent(new Gson().toJson(supplyActivity));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             protected SupplyActivity supplyActivity;
@@ -350,7 +359,7 @@ public class CollectionPlace extends Agent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfigOld.TRUCK_CONFIG.getClassName() + " que puedan realizar el trabajo");
+                            "No hay " + AgentConfig.TRUCK_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
 
             }
@@ -372,12 +381,13 @@ public class CollectionPlace extends Agent {
         this.supplyActivity.generateSupplyActivityOrder();
         this.supplyActivitiesList.add(this.supplyActivity);
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        System.out.println(this.supplyActivity);
         msg.setConversationId(DF_HELPER.IC_CONFIRM_SUPPLY_ACTIVITY);
-        msg.addReceiver(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityRequired().getAgentName()).getAID());
-        msg.addReceiver(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityProposed().getAgentName()).getAID());
-        msg.addReceiver(
-                DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityTransportation().getAgentName()).getAID());
+        ArrayList<Agent> listAgent = new ArrayList<>();
+        listAgent.add(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityRequired().getAgentName()));
+        listAgent.add(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityProposed().getAgentName()));
+        listAgent.add(DF_HELPER.getAgent(this.supplyActivity.getSupplyActivityTransportation().getAgentName()));
+        DF_HELPER.addAllReceiver(msg, listAgent);
+
         msg.setContent(new Gson().toJson(this.supplyActivity));
         this.addBehaviour(new AchieveREInitiator(this, msg) {
             @Override
@@ -396,9 +406,11 @@ public class CollectionPlace extends Agent {
 
     public void BI_EndSimulation() {
         DF_HELPER.println("END SIMULATION");
-        Agent agenteReceiver = DF_HELPER.getRegisteredAdministrador();
+        // Agent agenteReceiver = DF_HELPER.getRegisteredAdministrador();
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_END_SIMULATION;
-        msg.addReceiver(agenteReceiver.getAID());
+        ArrayList<Agent> listAgents = new ArrayList<>();
+        listAgents.add(DF_HELPER.getRegisteredAdministrador());
+        DF_HELPER.addAllReceiver(msg, listAgents);
         msg.setContent(new Gson().toJson(this.supplyActivitiesList));
         send(msg);
     }

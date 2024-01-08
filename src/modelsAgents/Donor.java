@@ -40,8 +40,8 @@ public class Donor extends Agent {
     public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
         this.enabled = true;
         System.out.println(listaArgumentos);
-        this.setUbication(new Ubication(Integer.parseInt((String) listaArgumentos.get(0)),
-                Integer.parseInt((String) listaArgumentos.get(1))));
+        this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(0)),
+                Double.parseDouble((String) listaArgumentos.get(1))));
         ArrayList<Integer> listStockMaterial = new ArrayList<>(
                 Arrays.asList(Integer.parseInt((String) listaArgumentos.get(7)),
                         Integer.parseInt((String) listaArgumentos.get(6)),

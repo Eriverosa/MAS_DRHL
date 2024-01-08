@@ -1,2 +1,6 @@
 NombreAgente;CantidadPoblacion;UbicacionLatitud;UbicacionLongitud;StockBotellas_0.5 lts;StockBotellas_1.0 lts;StockBotellas_1.6 lts;StockBotellas_2.0 lts;StockBotellas_2.250 lts;StockBotellas_20.0 lts
-PuntoDistribucion1;200;1000;2313;0;0;0;0;0;0
+PuntoDistribucion1;200;-20.2886; -70.2022;0;0;0;0;0;0
+PuntoDistribucion2;350;-20.2042; -70.2423;0;0;0;0;0;0
+PuntoDistribucion3;150;-20.1666; -70.0885;0;0;0;0;0;0
+PuntoDistribucion4;400;-20.2856; -70.1437;0;0;0;0;0;0
+PuntoDistribucion5;300;-20.2541; -70.0873;0;0;0;0;0;0

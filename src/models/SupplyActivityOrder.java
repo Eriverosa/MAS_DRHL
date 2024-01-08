@@ -1,9 +1,12 @@
 package src.models;
 
+import javax.measure.Unit;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import src.commons.ParametersConfig;
+import tech.units.indriya.unit.Units;
 
 public class SupplyActivityOrder {
     // CARGA
@@ -30,13 +33,14 @@ public class SupplyActivityOrder {
         this.tiempoViajeCarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeCarga();
         this.horaLlegadaViajeCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
         this.horaInicioCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
-        this.tiempoCarga = 200;
+        this.tiempoCarga = ParametersConfig.pipeStandarTime(2, Units.SECOND) * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
         this.horaFinCarga = this.horaInicioCarga + this.tiempoCarga;
         this.horaInicioViajeDescarga = this.horaFinCarga;
         this.tiempoViajeDescarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeDescarga();
         this.horaLlegadaViajeDescarga = horaInicioViajeDescarga + tiempoViajeDescarga;
         this.horaInicioDescarga = this.horaLlegadaViajeDescarga;
-        this.tiempoDescarga = 100;
+        this.tiempoDescarga = ParametersConfig.pipeStandarTime(1, Units.SECOND) * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
+        // this.tiempoDescarga = 100;
         this.horaFinDescarga = this.horaInicioDescarga + this.tiempoDescarga;
         this.pointNameSupplyActivityProposed = supplyActivity.getSupplyActivityProposed().getAgentName();
         this.pointNameSupplyActivityRequired = supplyActivity.getSupplyActivityRequired().getAgentName();

@@ -21,6 +21,7 @@ import src.models.SupplyActivity;
 import src.models.TransportationActivity;
 import src.models.TransportationActivityItinerary;
 import src.models.Ubication;
+import tech.units.indriya.unit.Units;
 
 public class Truck extends Agent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
@@ -74,8 +75,8 @@ public class Truck extends Agent {
     public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
         this.enabled = true;
         this.setNameTransportista(listaArgumentos.get(0).toString());
-        this.setUbication(new Ubication(Integer.parseInt((String) listaArgumentos.get(1)),
-                Integer.parseInt((String) listaArgumentos.get(2))));
+        this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(1)),
+                Double.parseDouble((String) listaArgumentos.get(2))));
         // System.out.println(listaArgumentos.get(3));
         this.setCapacidad((Integer) listaArgumentos.get(3));
     }
@@ -237,30 +238,29 @@ public class Truck extends Agent {
     // }
 
     public static long getTravelTime(Ubication supplyActivityUbication, Ubication proposedActivityUbication) {
-        // Radio medio de la Tierra en kilómetros
-        double radioTierra = 6371;
-
-        // Diferencias de latitud y longitud
-        double dLat = proposedActivityUbication.getLatitud() - supplyActivityUbication.getLatitud();
-        double dLon = proposedActivityUbication.getLongitud() - supplyActivityUbication.getLongitud();
-
-        // Fórmula de la distancia de Haverseno
+        // Radio medio de la Tierra en metros
+        double radioTierra = ParametersConfig.pipeStandarLength(6371 * 1000, Units.METRE);
+    
+        // Diferencias de latitud y longitud en radianes
+        double dLat = Math.toRadians(proposedActivityUbication.getLatitud() - supplyActivityUbication.getLatitud());
+        double dLon = Math.toRadians(proposedActivityUbication.getLongitud() - supplyActivityUbication.getLongitud());
+    
+        // Fórmula de Haverseno
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(supplyActivityUbication.getLatitud())
-                        * Math.cos(proposedActivityUbication.getLatitud()) * Math.sin(dLon / 2)
-                        * Math.sin(dLon / 2);
+                + Math.cos(Math.toRadians(supplyActivityUbication.getLatitud()))
+                * Math.cos(Math.toRadians(proposedActivityUbication.getLatitud())) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        // Distancia en kilómetros
+    
+        // Distancia en metros
         double distancia = radioTierra * c;
-
-        // Velocidad constante en metros por segundo
-        long velocidadMetrosPorSegundo = 50 * 1000; // 50 km/h = 50,000 m/h = 50,000 m/3,600 s = 50 * 1000 m/s
-
-        // Calcular el tiempo de viaje en milisegundos
-        long tiempoEnMilisegundos = (long) ((distancia * 1000) / velocidadMetrosPorSegundo); // Convertir a milisegundos
-        return tiempoEnMilisegundos;
+    
+        // Velocidad en metros por segundo (asegúrate de que la velocidad esté en esta unidad)
+        double velocity = ParametersConfig.STANDARD_SPEED;
+        System.out.println(distancia / velocity);
+        // Tiempo en segundos
+        return (long) (distancia / velocity);
     }
+    
 
     public static int getMaxLoad(int capacidadCamion, int pesoCargar) {
         if (capacidadCamion <= 0 || pesoCargar <= 0) {

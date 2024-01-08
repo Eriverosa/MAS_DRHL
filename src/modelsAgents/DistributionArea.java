@@ -49,8 +49,8 @@ public class DistributionArea extends Agent {
 
     public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
         this.setPoblacion(Integer.parseInt((String) listaArgumentos.get(0)));
-        this.setUbication(new Ubication(Integer.parseInt((String) listaArgumentos.get(1)),
-                Integer.parseInt((String) listaArgumentos.get(2))));
+        this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(1)),
+                Double.parseDouble((String) listaArgumentos.get(2))));
         this.enabled = true;
         ArrayList<Integer> listStockMaterial = new ArrayList<>(
                 Arrays.asList(Integer.parseInt((String) listaArgumentos.get(8)),
@@ -68,14 +68,19 @@ public class DistributionArea extends Agent {
             ArrayList<SupplyActivityOrder> listSupplyActivities;
             MaterialStock materialStock;
 
-            @Override
-            public void onStart() {
+            // @Override
+            // public void onStart() {
+            // this.listSupplyActivities = getListSupplyActivities();
+            // this.materialStock = getMaterialStock();
+            // super.onStart();
+            // }
+            public void getValues() {
                 this.listSupplyActivities = getListSupplyActivities();
                 this.materialStock = getMaterialStock();
-                super.onStart();
             }
 
             protected ACLMessage handleRequest(ACLMessage request) {
+                getValues();
                 ArrayList<SupplyActivityOrder> listCopySupplyActivities = this.listSupplyActivities.stream()
                         .filter(element -> !Objects.equals(element.getStatus(),
                                 ParametersConfig.STATE_SUPPLY_ACTIVITY_DONE))
@@ -85,15 +90,23 @@ public class DistributionArea extends Agent {
                 for (SupplyActivityOrder supplyActivityOrder : listCopySupplyActivities) {
                     if (currTime >= supplyActivityOrder.getHoraFinDescarga()) {
                         supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_DONE);
+                        // System.out.println(this.materialStock.toString());
                         this.materialStock.addMaterialStock(supplyActivityOrder.getMaterialStock());
+                        // System.out.println(this.materialStock.toString());
+                        // System.out.println("ln96");
+
                     } else if (currTime >= supplyActivityOrder.getHoraInicioDescarga() &&
                             currTime < supplyActivityOrder.getHoraFinDescarga()) {
                         supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_DOING);
+                        System.out.println("101");
                     } else {
                         supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_PENDING);
+                        System.out.println("104");
                     }
-                    this.materialStock.discountMaterialStockByTime();
                 }
+                System.out.println(this.materialStock.toString());
+                this.materialStock.discountMaterialStockByTime();
+                System.out.println(this.materialStock.toString());
                 return new ACLMessage(ACLMessage.INFORM);
             }
 
@@ -117,25 +130,36 @@ public class DistributionArea extends Agent {
             private MaterialStock materialStock;
             private int nHelpNeed;
 
-            @Override
-            public void onStart() {
+            public void getValues() {
                 this.enabled = getEnabled();
                 this.poblacion = getPoblacion();
                 this.ubication = getUbication();
                 this.materialStock = getMaterialStock();
                 this.listSupplyActivities = getListSupplyActivities();
-                super.onStart();
             }
 
+            // @Override
+            // public void onStart() {
+            // this.enabled = getEnabled();
+            // this.poblacion = getPoblacion();
+            // this.ubication = getUbication();
+            // this.materialStock = getMaterialStock();
+            // this.listSupplyActivities = getListSupplyActivities();
+            // super.onStart();
+            // }
+
             protected ACLMessage handleCfp(ACLMessage cfp) {
+                getValues();
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
                 if (this.enabled) {
                     long tiempoInicio = Long.valueOf(cfp.getContent());
                     // this.nHelpNeed = this.poblacion -
                     // this.materialStock.getTotalAmountHelpByPerson();
+                    System.out.println(this.materialStock.toString());
                     if (this.materialStock.getNeedHelp(this.poblacion)) {
                         this.nHelpNeed = this.materialStock.getTotalNeedHelp(this.poblacion);
+                        System.out.println(this.nHelpNeed);
                         if (this.listSupplyActivities.isEmpty()) {
                             SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
                                     this.nHelpNeed, this.ubication, this.myAgent.getLocalName(), tiempoInicio,
@@ -145,6 +169,7 @@ public class DistributionArea extends Agent {
                         } else {
                             SupplyActivityOrder supplyActivityOrder = this.listSupplyActivities
                                     .get(this.listSupplyActivities.size() - 1);
+                            System.out.println(supplyActivityOrder.toString());
                             if (tiempoInicio >= supplyActivityOrder.getHoraFinDescarga()) {
                                 SupplyActivityRequired requiredSupply = new SupplyActivityRequired(this.poblacion,
                                         this.nHelpNeed, this.ubication, this.myAgent.getLocalName(), tiempoInicio,

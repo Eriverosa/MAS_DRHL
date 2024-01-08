@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) throws StaleProxyException {
         Profile p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
-        p.setParameter(Profile.GUI, "true");
+        p.setParameter(Profile.GUI, "false");
         boolean test = false;
         if (test) {
             // Profile myProfile = new ProfileImpl();
@@ -31,9 +31,8 @@ public class Main {
 
         } else {
             Runtime.instance().createMainContainer(p);
-            AgentConfig agentConfig = new AgentConfig();
-            agentConfig.ADMINISTRATOR_CONFIG.getContainerController()
-                    .createNewAgent("Administrator", agentConfig.ADMINISTRATOR_CONFIG.getClassRoute(), new Object[] {}).start();
+            AgentConfig.ADMINISTRATOR_CONFIG.getContainerController()
+                    .createNewAgent("Administrator", AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute(), new Object[] {}).start();
         }
     }
 

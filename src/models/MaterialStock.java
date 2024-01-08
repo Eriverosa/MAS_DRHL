@@ -242,7 +242,7 @@ public class MaterialStock {
 
     public void discountMaterialStockByTime() {
         int resultadoRedondeado = (int) Math
-                .round((double) ParametersConfig.TIME_EXECUTION_ADD_MS / ParametersConfig.TIME_DELAY_BY_PERSON_MS);
+                .round((double) ParametersConfig.EXECUTION_ADD_TIME / ParametersConfig.DELAY_BY_PERSON_TIME);
         MaterialStock materialStock = this.getOptimeCombination(resultadoRedondeado);
         this.removeMaterialStock(materialStock);
     }
