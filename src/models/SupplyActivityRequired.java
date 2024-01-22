@@ -9,7 +9,18 @@ public class SupplyActivityRequired implements Cloneable{
     String agentName;
     long horaRequerida;
     MaterialStock materialStock;
+    NegotiationTime negotiationTime;
     
+    public NegotiationTime getNegotiationTime() {
+        return negotiationTime;
+    }
+
+    public void setNegotiationTime(NegotiationTime negotiationTime) {
+        this.negotiationTime = negotiationTime;
+    }
+
+
+
     public SupplyActivityRequired(Integer cantidadPersonas, Integer cantidadPersonasRequired, Ubication ubicacion, String agentName, long horaRequerida,
             MaterialStock materialStock) {
         this.cantidadPersonas = cantidadPersonas;
@@ -18,6 +29,7 @@ public class SupplyActivityRequired implements Cloneable{
         this.agentName = agentName;
         this.horaRequerida = horaRequerida;
         this.materialStock = materialStock;
+        // this.negotiationTime = new NegotiationTime();
     }
 
 

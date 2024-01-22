@@ -20,7 +20,7 @@ import src.models.SupplyActivityOrder;
 import src.models.Ubication;
 import com.google.gson.Gson;
 
-public class DistributionArea extends Agent {
+public class DistributionArea extends Agent implements CommonAgent{
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     String IdCamion, PuntoInicial;
     long Capacidad, VelocidadVacio, VelocidadCargado, DuracionDescargas, TiempoOperacion, TotalTransportado,
@@ -29,25 +29,29 @@ public class DistributionArea extends Agent {
     private MaterialStock materialStock;
     private Integer poblacion;
     private Ubication ubication;
-    private ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
+    private ArrayList<SupplyActivityOrder> listSupplyActivities;
+    private ArrayList<Object> listaArgumentos;
 
     @Override
     protected void setup() {
-        ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
-        // this.cargarInformacionAgente(listaArgumentos);
+        listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
+        this.cargarInformacionAgente();
+        // RESPONDERS
         this.BR_RequiredSupply();
         this.BR_ConfirmSupplyActivity();
         this.BR_UpdateTimeEvent();
-        this.cargarInformacionAgente(listaArgumentos);
         DF_HELPER.BR_UpdateAgentState(this);
+        DF_HELPER.BR_ReInitializeData(this);
         DF_HELPER.registrarServicio(this);
+        // INITIATORS
         DF_HELPER.BI_CreacionFinalizada(this);
+
         // helper.registrarServicio(this);
         // send(helper.mensajeCreacionFinalizada(this));
         // ejecutarFuncion();
     }
 
-    public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
+    public void cargarInformacionAgente() {
         this.setPoblacion(Integer.parseInt((String) listaArgumentos.get(0)));
         this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(1)),
                 Double.parseDouble((String) listaArgumentos.get(2))));
@@ -60,6 +64,7 @@ public class DistributionArea extends Agent {
                         Integer.parseInt((String) listaArgumentos.get(4)),
                         Integer.parseInt((String) listaArgumentos.get(3))));
         this.setMaterialStock(new MaterialStock(listStockMaterial));
+        listSupplyActivities = new ArrayList<>();
     }
 
     public void BR_UpdateTimeEvent() {
@@ -68,12 +73,6 @@ public class DistributionArea extends Agent {
             ArrayList<SupplyActivityOrder> listSupplyActivities;
             MaterialStock materialStock;
 
-            // @Override
-            // public void onStart() {
-            // this.listSupplyActivities = getListSupplyActivities();
-            // this.materialStock = getMaterialStock();
-            // super.onStart();
-            // }
             public void getValues() {
                 this.listSupplyActivities = getListSupplyActivities();
                 this.materialStock = getMaterialStock();
@@ -98,24 +97,15 @@ public class DistributionArea extends Agent {
                     } else if (currTime >= supplyActivityOrder.getHoraInicioDescarga() &&
                             currTime < supplyActivityOrder.getHoraFinDescarga()) {
                         supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_DOING);
-                        System.out.println("101");
                     } else {
                         supplyActivityOrder.setStatus(ParametersConfig.STATE_SUPPLY_ACTIVITY_PENDING);
-                        System.out.println("104");
                     }
                 }
-                System.out.println(this.materialStock.toString());
+                // System.out.println(this.materialStock.toString());
                 this.materialStock.discountMaterialStockByTime();
-                System.out.println(this.materialStock.toString());
+                // System.out.println(this.materialStock.toString());
                 return new ACLMessage(ACLMessage.INFORM);
             }
-
-            // @Override
-            // public int onEnd() {
-            // setMaterialStock(this.materialStock);
-            // // TODO Auto-generated method stub
-            // return super.onEnd();
-            // }
         });
     }
 
@@ -156,7 +146,7 @@ public class DistributionArea extends Agent {
                     long tiempoInicio = Long.valueOf(cfp.getContent());
                     // this.nHelpNeed = this.poblacion -
                     // this.materialStock.getTotalAmountHelpByPerson();
-                    System.out.println(this.materialStock.toString());
+                    // System.out.println(this.materialStock.toString());
                     if (this.materialStock.getNeedHelp(this.poblacion)) {
                         this.nHelpNeed = this.materialStock.getTotalNeedHelp(this.poblacion);
                         System.out.println(this.nHelpNeed);
@@ -213,7 +203,7 @@ public class DistributionArea extends Agent {
                     // }
 
                 } else {
-                    reply.setPerformative(ACLMessage.FAILURE);
+                    reply.setPerformative(ACLMessage.REFUSE);
                 }
                 return reply;
             }

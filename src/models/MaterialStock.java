@@ -57,7 +57,7 @@ public class MaterialStock {
     }
 
     public Boolean getNeedHelp(int amountPeople) {
-        return this.getTotalAmountHelpByPerson() <= ParametersConfig.CANTIDAD_MINIMA_STOCK_PERCENT * amountPeople;
+        return this.getTotalAmountHelpByPerson() <= ParametersConfig.DISTRIBUTION_CANTIDAD_MINIMA_STOCK_PERCENT * amountPeople;
     }
 
     public int getTotalNeedHelp(int amountPeople) {

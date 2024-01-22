@@ -20,6 +20,7 @@ import jade.proto.AchieveREResponder;
 import jade.proto.SimpleAchieveREResponder;
 import jade.proto.SubscriptionResponder;
 import jade.tools.sniffer.Message;
+import src.behaviours.SimpleConversationResponder;
 // import src.commons.AgentConfig;
 import src.commons.AgentConfig;
 // import src.commons.agentConfig.CreationAgentConfig;
@@ -79,6 +80,14 @@ public class DFHelper extends Agent {
             INT_MESSAGE_UPDATE_TIME_EVENT, IC_UPDATE_TIME_EVENT);
     public final MessageTemplate MESSAGE_TEMPLATE_UPDATE_TIME_EVENT = getMessageTemplate(
             INT_MESSAGE_UPDATE_TIME_EVENT, IC_UPDATE_TIME_EVENT);
+
+    // REINITIALIZE_DATA
+    final int INT_MESSAGE_REINITIALIZE_DATA = ACLMessage.REQUEST;
+    private final String IC_REINITIALIZE_DATA = "ID_CONVERSATION_REINITIALIZE_DATA";
+    public final ACLMessage ACL_MESSAGE_REINITIALIZE_DATA = getMessage(
+            INT_MESSAGE_REINITIALIZE_DATA, IC_REINITIALIZE_DATA);
+    public final MessageTemplate MESSAGE_TEMPLATE_REINITIALIZE_DATA = getMessageTemplate(
+            INT_MESSAGE_REINITIALIZE_DATA, IC_REINITIALIZE_DATA);
 
     // END_SIMULATION
     private final int INT_MESSAGE_END_SIMULATION = ACLMessage.REQUEST;
@@ -168,6 +177,16 @@ public class DFHelper extends Agent {
         return listAgents;
     }
 
+    public ArrayList<Agent> getAgentsList() {
+        ArrayList<Agent> listAgents = new ArrayList<>();
+        listAgents.addAll(LIST_REGISTERED_TRUCK);
+        listAgents.addAll(LIST_REGISTERED_TRANSPORTER);
+        listAgents.addAll(LIST_REGISTERED_DISTRIBUTION_AREA);
+        listAgents.addAll(LIST_REGISTERED_DONOR);
+        listAgents.addAll(LIST_REGISTERED_COLLECTION_PLACE);
+        return listAgents;
+    }
+
     public Agent getAgent(String name) {
         ArrayList<Agent> listaAgentes = new ArrayList<>();
         listaAgentes.addAll(getAgentsList(AgentConfig.TRUCK_CONFIG));
@@ -240,15 +259,52 @@ public class DFHelper extends Agent {
         });
     }
 
+    public void BR_ReInitializeData(Agent agente) {
+        MessageTemplate template = MESSAGE_TEMPLATE_REINITIALIZE_DATA;
+        agente.addBehaviour(new SimpleConversationResponder(this, template) {
+            @Override
+            protected ACLMessage handleAclMessage(ACLMessage msg) {
+                println(agente, msg);
+                if (agente instanceof CommonAgent) {
+                    ((CommonAgent) agente).cargarInformacionAgente();
+                }
+                // if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+                // } else if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.TRUCK_CONFIG.getClassRoute())) {
+                //     Truck agenteParse = (Truck) agente;
+                //     agenteParse.cargarInformacionAgente();
+                // } else if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+                //     Transporter agenteParse = (Transporter) agente;
+                //     agenteParse.cargarInformacionAgente();
+                // } else if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+                //     DistributionArea agenteParse = (DistributionArea) agente;
+                //     agenteParse.cargarInformacionAgente();
+                // } else if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.DONOR_CONFIG.getClassRoute())) {
+                //     Donor agenteParse = (Donor) agente;
+                //     agenteParse.cargarInformacionAgente();
+                // } else if (Objects.equals(agente.getClass().getName(),
+                //         AgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+                //     CollectionPlace agenteParse = (CollectionPlace) agente;
+                //     agenteParse.cargarInformacionAgente();
+                // }
+                ACLMessage reply = msg.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                return reply;
+            }
+        });
+    }
+
     public void BR_UpdateAgentState(Agent agente) {
         MessageTemplate template = MESSAGE_TEMPLATE_UPDATE_AGENT_STATE;
         agente.addBehaviour(new AchieveREResponder(this, template) {
             protected ACLMessage prepareResponse(ACLMessage request) {
                 ACLMessage reply = request.createReply();
-                println(agente, request);
                 if (Objects.equals(agente.getClass().getName(),
                         AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
-                    // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
                 } else if (Objects.equals(agente.getClass().getName(),
                         AgentConfig.TRUCK_CONFIG.getClassRoute())) {
                     Truck agenteParse = (Truck) agente;
@@ -274,128 +330,9 @@ public class DFHelper extends Agent {
                 return reply;
             }
         });
-
-        // agente.addBehaviour(new AchieveREResponder(agente, template) {
-
-        // @Override
-        // protected ACLMessage prepareResponse(ACLMessage request) throws
-        // NotUnderstoodException, RefuseException {
-        // ACLMessage reply = request.createReply();
-        // reply.setPerformative(ACLMessage.INFORM);
-        // Boolean enable = Boolean.parseBoolean(request.getContent());
-        // if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
-        // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.TRUCK_CONFIG.getClassRoute())) {
-        // Truck agenteParse = (Truck) agente;
-        // agenteParse.setEnabled(enable);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
-        // Transporter agenteParse = (Transporter) agente;
-        // agenteParse.setEnabled(enable);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
-        // DistributionArea agenteParse = (DistributionArea) agente;
-        // agenteParse.setEnabled(enable);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.DONOR_CONFIG.getClassRoute())) {
-        // Donor agenteParse = (Donor) agente;
-        // agenteParse.setEnabled(enable);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
-        // CollectionPlace agenteParse = (CollectionPlace) agente;
-        // agenteParse.setEnabled(enable);
-        // }
-        // return reply;
-        // }
-
-        // // protected ACLMessage prepareResponse(ACLMessage request) throws
-        // // NotUnderstoodException, RefuseException {
-        // // System.out.println(282);
-        // // Boolean enable = Boolean.parseBoolean(request.getContent());
-        // // if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
-        // // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.TRUCK_CONFIG.getClassRoute())) {
-        // // Truck agenteParse = (Truck) agente;
-        // // agenteParse.setEnabled(enable);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
-        // // Transporter agenteParse = (Transporter) agente;
-        // // agenteParse.setEnabled(enable);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
-        // // DistributionArea agenteParse = (DistributionArea) agente;
-        // // agenteParse.setEnabled(enable);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.DONOR_CONFIG.getClassRoute())) {
-        // // Donor agenteParse = (Donor) agente;
-        // // agenteParse.setEnabled(enable);
-        // // } else if (Objects.equals(agente.getClass().getName(),
-        // // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
-        // // CollectionPlace agenteParse = (CollectionPlace) agente;
-        // // agenteParse.setEnabled(enable);
-        // // }
-        // // request.setPerformative(ACLMessage.SUBSCRIBE);
-        // // return request.createReply();
-        // // }
-        // });
-
-        // agente.addBehaviour(new ContractNetResponder(agente, template) {
-        // protected ACLMessage handleCfp(ACLMessage cfp) {
-        // // Recibir y procesar el mensaje de tipo INFORM
-        // System.out.println("Mensaje INFORM recibido del agente " +
-        // cfp.getSender().getLocalName());
-        // System.out.println("Contenido del mensaje: " + cfp.getContent());
-        // // Responder con un mensaje de tipo INFORM
-        // ACLMessage reply = cfp.createReply();
-        // reply.setPerformative(ACLMessage.INFORM);
-        // reply.setContent("Respuesta INFORM del agente responder");
-        // return reply;
-        // }
-        // // protected ACLMessage handleRequest(ACLMessage request) {
-        // System.out.println("Llegó al responder");
-        // if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
-        // // LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.TRUCK_CONFIG.getClassRoute())) {
-        // Truck agenteParse = (Truck) agente;
-        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
-        // Transporter agenteParse = (Transporter) agente;
-        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
-        // DistributionArea agenteParse = (DistributionArea) agente;
-        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.DONOR_CONFIG.getClassRoute())) {
-        // Donor agenteParse = (Donor) agente;
-        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // } else if (Objects.equals(agente.getClass().getName(),
-        // agentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
-        // CollectionPlace agenteParse = (CollectionPlace) agente;
-        // agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
-        // }
-        // // ACLMessage response = request.createReply();
-        // // response.setPerformative(ACLMessage.INFORM);
-        // // return response;
-        // // }
-
-        // // @Override
-        // // protected ACLMessage prepareResultNotification(ACLMessage request,
-        // ACLMessage
-        // // response) {
-        // // return null;
-        // // }
-        // });
     }
 
-    public void addAllReceiver(ACLMessage msg, ArrayList<Agent> agents){
+    public void addAllReceiver(ACLMessage msg, ArrayList<Agent> agents) {
         msg.clearAllReceiver();
         for (Agent agent : agents) {
             msg.addReceiver(agent.getAID());

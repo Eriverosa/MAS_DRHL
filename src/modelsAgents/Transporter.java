@@ -10,10 +10,11 @@ import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetResponder;
 
-public class Transporter extends Agent {
+public class Transporter extends Agent implements CommonAgent{
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     private Boolean enabled;
     private ArrayList<String> truckPayroll;
+    private ArrayList<Object> listaArgumentos;
 
     public Boolean getEnabled() {
         return enabled;
@@ -41,16 +42,19 @@ public class Transporter extends Agent {
 
     @Override
     protected void setup() {
-        ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
+        listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
+        this.cargarInformacionAgente();
+        // RESPONDERS
         this.BR_ConsultTransporter();
         this.BR_RegisterCarrier();
-        this.cargarInformacionAgente(listaArgumentos);
         DF_HELPER.BR_UpdateAgentState(this);
+        DF_HELPER.BR_ReInitializeData(this);
         DF_HELPER.registrarServicio(this);
+        // INITIATORS
         DF_HELPER.BI_CreacionFinalizada(this);
     }
 
-    public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
+    public void cargarInformacionAgente() {
         this.enabled = true;
         this.truckPayroll = new ArrayList<>();
     }
@@ -61,14 +65,21 @@ public class Transporter extends Agent {
         addBehaviour(new AchieveREResponder(this, template) {
             private ArrayList<String> truckPayroll;
 
-            @Override
-            public void onStart() {
+            // @Override
+            // public void onStart() {
+            // this.truckPayroll = getTruckPayroll();
+            // super.onStart();
+            // }
+
+            public void getValues() {
                 this.truckPayroll = getTruckPayroll();
-                super.onStart();
+                // this.enabled = getEnabled();
+                // this.materialStock = getMaterialStock();
             }
 
             @Override
             protected ACLMessage handleRequest(ACLMessage request) {
+                getValues();
                 ACLMessage reply = request.createReply();
                 System.out.println("Mensaje recibido de " + request.getSender().getLocalName());
                 Integer tipo = ACLMessage.AGREE;
@@ -101,7 +112,7 @@ public class Transporter extends Agent {
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
                 ACLMessage reply = cfp.createReply();
-                reply.setPerformative(getEnabled() ? ACLMessage.PROPOSE : ACLMessage.FAILURE);
+                reply.setPerformative(getEnabled() ? ACLMessage.PROPOSE : ACLMessage.REFUSE);
                 reply.setContent(new Gson().toJson(this.truckPayroll));
                 return reply;
             }

@@ -10,10 +10,22 @@ public class SupplyActivityTransportation implements Cloneable {
     String puntoDescarga;
     String agentName;
     Integer cantidadTrasladada;
+    NegotiationTime negotiationTime;
+    Integer negotiationQuantity;
 
+    
+
+    public NegotiationTime getNegotiationTime() {
+        return negotiationTime;
+    }
+
+    public void setNegotiationTime(NegotiationTime negotiationTime) {
+        this.negotiationTime = negotiationTime;
+    }
 
     public SupplyActivityTransportation(Long tiempoInicioActividad, Long tiempoViajeCarga,
-            Long tiempoViajeDescarga, String agentName, Integer cantidadTrasladada, String puntoCarga, String puntoDescarga) {
+            Long tiempoViajeDescarga, String agentName, Integer cantidadTrasladada, String puntoCarga,
+            String puntoDescarga) {
         this.horaInicioViajeCarga = tiempoInicioActividad;
         this.tiempoViajeCarga = tiempoViajeCarga;
         this.horaFinViajeCarga = this.horaInicioViajeCarga + this.tiempoViajeCarga;
@@ -166,5 +178,12 @@ public class SupplyActivityTransportation implements Cloneable {
         this.cantidadTrasladada = cantidadTrasladada;
     }
 
-    
+    public Integer getNegotiationQuantity() {
+        return negotiationQuantity;
+    }
+
+    public void setNegotiationQuantity(Integer negotiationQuantity) {
+        this.negotiationQuantity = negotiationQuantity;
+    }
+
 }

@@ -5,6 +5,7 @@ import javax.measure.Unit;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import src.commons.CustomUnits;
 import src.commons.ParametersConfig;
 import tech.units.indriya.unit.Units;
 
@@ -26,6 +27,7 @@ public class SupplyActivityOrder {
     private String pointNameSupplyActivityProposed, pointNameSupplyActivityRequired,
             pointNameSupplyActivityTransportation;
     private String status;
+    private NegotiationTime negotiationTime;
     // private long horaSiguienteRequerimiento;
 
     public SupplyActivityOrder(SupplyActivity supplyActivity) {
@@ -33,13 +35,15 @@ public class SupplyActivityOrder {
         this.tiempoViajeCarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeCarga();
         this.horaLlegadaViajeCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
         this.horaInicioCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioCarga();
-        this.tiempoCarga = ParametersConfig.pipeStandarTime(2, Units.SECOND) * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
+        this.tiempoCarga = (long) CustomUnits.pipeStandarTime(2, Units.SECOND, long.class)
+                * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
         this.horaFinCarga = this.horaInicioCarga + this.tiempoCarga;
         this.horaInicioViajeDescarga = this.horaFinCarga;
         this.tiempoViajeDescarga = supplyActivity.getSupplyActivityTransportation().getTiempoViajeDescarga();
         this.horaLlegadaViajeDescarga = horaInicioViajeDescarga + tiempoViajeDescarga;
         this.horaInicioDescarga = this.horaLlegadaViajeDescarga;
-        this.tiempoDescarga = ParametersConfig.pipeStandarTime(1, Units.SECOND) * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
+        this.tiempoDescarga = (long) CustomUnits.pipeStandarTime(1, Units.SECOND, long.class)
+                * supplyActivity.getSupplyActivityProposed().getMaterialStock().getTotalAmountHelpByPerson();
         // this.tiempoDescarga = 100;
         this.horaFinDescarga = this.horaInicioDescarga + this.tiempoDescarga;
         this.pointNameSupplyActivityProposed = supplyActivity.getSupplyActivityProposed().getAgentName();
@@ -49,6 +53,10 @@ public class SupplyActivityOrder {
         this.materialStock = materialStock
                 .getOptimeCombination(supplyActivity.getSupplyActivityTransportation().getCantidadTrasladada());
         this.status = ParametersConfig.STATE_SUPPLY_ACTIVITY_PENDING;
+        this.negotiationTime = new NegotiationTime(
+                supplyActivity.getSupplyActivityRequired().getNegotiationTime().getElapsedTime()
+                        + supplyActivity.getSupplyActivityProposed().getNegotiationTime().getElapsedTime()
+                        + supplyActivity.getSupplyActivityTransportation().getNegotiationTime().getElapsedTime());
     }
 
     public String toString(boolean prettyFormat) {
@@ -195,6 +203,14 @@ public class SupplyActivityOrder {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public NegotiationTime getNegotiationTime() {
+        return negotiationTime;
+    }
+
+    public void setNegotiationTime(NegotiationTime negotiationTime) {
+        this.negotiationTime = negotiationTime;
     }
 
 }

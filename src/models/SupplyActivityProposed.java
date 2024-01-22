@@ -6,6 +6,9 @@ public class SupplyActivityProposed {
     MaterialStock materialStock;
     Ubication ubicacion;
     String agentName;
+    NegotiationTime negotiationTime;
+    Integer negotiationQuantity; 
+
 
     public SupplyActivityProposed(MaterialStock materialStock, Ubication ubicacion, String agentName) {
         this.materialStock = materialStock;
@@ -41,6 +44,22 @@ public class SupplyActivityProposed {
 
     public void setAgentName(String agentName) {
         this.agentName = agentName;
+    }
+
+    public NegotiationTime getNegotiationTime() {
+        return negotiationTime;
+    }
+
+    public void setNegotiationTime(NegotiationTime negotiationTime) {
+        this.negotiationTime = negotiationTime;
+    }
+
+    public Integer getNegotiationQuantity() {
+        return negotiationQuantity;
+    }
+
+    public void setNegotiationQuantity(Integer negotiationQuantity) {
+        this.negotiationQuantity = negotiationQuantity;
     }
 
     // public ProposedSupply(String json) {

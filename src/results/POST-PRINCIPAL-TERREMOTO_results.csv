@@ -1,0 +1,16 @@
+horaInicioViajeCarga;tiempoViajeCarga;horaLlegadaViajeCarga;horaInicioCarga;tiempoCarga;horaFinCarga;horaInicioViajeDescarga;tiempoViajeDescarga;horaLlegadaViajeDescarga;horaInicioDescarga;tiempoDescarga;horaFinDescarga;pointNameSupplyActivityProposed;pointNameSupplyActivityRequired;pointNameSupplyActivityTransportation;ayudaRequerida;ayudaTransportada;tiempoDuraciónConversacion;cantidadNegociacionesTotal
+0.0;21;21;21;840;861;861;139;1000;1000;420;1420;Donador3;PuntoDistribucion9;Transporte6_7ton_3;420;420;5.223412312;49
+0.0;21;21;21;700;721;721;55;776;776;350;1126;Donador3;PuntoDistribucion23;Transporte6_20ton_1;350;350;4.104594409;39
+0.0;21;21;21;640;661;661;99;760;760;320;1080;Donador3;PuntoDistribucion8;Transporte6_20ton_4;320;320;3.924350328;46
+0.0;71;71;71;600;671;671;49;720;720;300;1020;Donador1;PuntoDistribucion5;Transporte6_7ton_1;300;300;3.616112113;34
+0.0;71;71;71;560;631;631;67;698;698;280;978;Donador1;PuntoDistribucion14;Transporte6_20ton_2;280;280;3.332701527;36
+0.0;71;71;71;520;591;591;126;717;717;260;977;Donador1;PuntoDistribucion16;Transporte6_trailer_3;260;260;3.097413608;38
+0.0;82;82;82;500;582;582;188;770;770;250;1020;Donador6;PuntoDistribucion6;Transporte3_7ton_4;250;250;3.059587742;41
+0.0;82;82;82;460;542;542;248;790;790;230;1020;Donador6;PuntoDistribucion11;Transporte3_7ton_1;230;230;2.805866923;37
+0.0;82;82;82;400;482;482;124;606;606;200;806;Donador6;PuntoDistribucion1;Transporte3_7ton_5;200;200;2.510446311;45
+0.0;82;82;82;300;382;382;87;469;469;150;619;Donador6;PuntoDistribucion3;Transporte3_trailer_1;150;150;1.863598702;42
+0.0036;71;3671;3671;120;3791;3791;74;3865;3865;60;3925;Donador1;PuntoDistribucion11;Transporte6_7ton_3;60;60;0.746337478;55
+0.0036;71;3671;3671;120;3791;3791;71;3862;3862;60;3922;Donador1;PuntoDistribucion1;Transporte6_7ton_1;60;60;0.752061448;51
+0.0036;82;3682;3682;120;3802;3802;87;3889;3889;60;3949;Donador6;PuntoDistribucion3;Transporte3_7ton_1;60;60;0.749276446;56
+numeroNegociaciones;tiempoMinimoProcesamiento;tiempoMaximoProcesamiento;tiempoPromedioProcesamiento;tiempoTotal
+569;746337478.000000;5223412312.000000;OptionalDouble[2.752750719E9];3.5785759347E10

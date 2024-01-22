@@ -1,6 +1,11 @@
 NombreAgente;UbicacionLatitud;UbicacionLongitud;7ton_3500kg;20ton_12000kg;trailer_24000kg;remolque_25000kg;megatrailer_24000kg
-Transporte1;-20.2104; -70.1391;2;2;2;2;2
-Transporte2;-20.2072; -70.1577;2;2;2;2;2
-Transporte3;-20.1978; -70.1724;2;2;2;2;2
-Transporte4;-20.1961; -70.1679;2;2;2;2;2
-Transporte5;-20.2292; -70.1492;2;2;2;2;2
+Transporte1;-20.2201;-70.1325;4;1;0;3;1
+Transporte2;-20.2423;-70.1524;2;3;1;2;0
+Transporte3;-20.2247;-70.1579;5;0;4;2;3
+Transporte4;-20.2321;-70.1354;0;2;5;4;4
+Transporte5;-20.2126;-70.1403;1;4;2;1;5
+Transporte6;-20.2387;-70.1399;3;5;3;5;2
+Transporte7;-20.2173;-70.1651;4;1;0;3;1
+Transporte8;-20.2020;-70.1808;2;3;1;2;0
+Transporte9;-20.2096;-70.1296;5;0;4;2;3
+Transporte10;-20.1952;-70.1457;0;2;5;4;4

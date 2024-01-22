@@ -79,9 +79,9 @@ public class Administrator extends Agent {
                 System.exit(0);
             }
         } else {
-            // AgentConfig.enableCreationConfigList();
             this.currCreationScenarioConfig = this.scenarioConfig
-                    .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
+                    .getNextCreationScenarioConfigEnable(
+                            CreationScenarioConfig.CreationScenarioConfigStates.NOT_INITIALIZED);
             this.F_UpdateState();
         }
     }
@@ -90,9 +90,9 @@ public class Administrator extends Agent {
         DF_HELPER.println(this, "PROCESS CHANGE STATE OF AGENTS");
         ArrayList<Agent> listAgentsEnable = new ArrayList<>();
         ArrayList<Agent> listAgentsDisable = new ArrayList<>();
+        System.out.println(this.currCreationScenarioConfig);
         for (BehaviourCreationScenarioConfig behaviorConfig : this.currCreationScenarioConfig
                 .getBehaviourCreationScnearionConfigList()) {
-
             ArrayList<Agent> agentsList = DF_HELPER.getAgentsList(behaviorConfig.getCreationAgentConfig());
             Collections.shuffle(agentsList);
             Integer nEnabledAgents = Objects.isNull(behaviorConfig.getnEnabledAgents()) ? agentsList.size()
@@ -129,18 +129,9 @@ public class Administrator extends Agent {
         });
     }
 
-    public void BI_UpdateTimeEvent() {
-        DF_HELPER.println("UPDATE TIME EVENT");
-        this.currExecutionTime = (this.currCreationScenarioConfig.getnCurrIterations() == 1)
-                ? ParametersConfig.EXECUTION_INIT_TIME
-                : (this.currExecutionTime + ParametersConfig.EXECUTION_ADD_TIME);
-
-        ArrayList<Agent> agentsList = new ArrayList<>(DF_HELPER.getListRegisteredDistributionArea());
-        ACLMessage msg = DF_HELPER.ACL_MESSAGE_UPDATE_TIME_EVENT;
-        msg.setContent(String.valueOf(currExecutionTime));
-
-        DF_HELPER.addAllReceiver(msg, agentsList);
-
+    public void BI_ReinitializeData() {
+        ACLMessage msg = DF_HELPER.ACL_MESSAGE_REINITIALIZE_DATA;
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList());
         this.addBehaviour(new AchieveREInitiator(this, msg) {
             @Override
             protected void handleAllResponses(Vector responses) {
@@ -150,10 +141,49 @@ public class Administrator extends Agent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                BI_RequestInitializatorSimulation();
+                F_UpdateState();
                 return 0;
             }
         });
+    }
+
+    public void BI_UpdateTimeEvent() {
+        DF_HELPER.println("UPDATE TIME EVENT");
+        // this.currExecutionTime = this.currCreationScenarioConfig.initial()
+        // ? ParametersConfig.EXECUTION_INIT_TIME
+        // : (this.currExecutionTime + ParametersConfig.EXECUTION_ADD_TIME);
+        if (this.currCreationScenarioConfig.initial()) {
+            this.currExecutionTime = ParametersConfig.EXECUTION_INIT_TIME;
+            this.currCreationScenarioConfig
+                    .setStateIteration(ScenarioConfig.CreationScenarioConfig.CreationScenarioConfigStates.EXECUTING);
+            // System.out.println(this.currCreationScenarioConfig.getIterator().get());
+            // System.out.println(this.currCreationScenarioConfig.getIterator().next());
+
+            BI_RequestInitializatorSimulation();
+        } else {
+            this.currExecutionTime = this.currExecutionTime + ParametersConfig.EXECUTION_ADD_TIME;
+            ArrayList<Agent> agentsList = new ArrayList<>();
+            agentsList.addAll(DF_HELPER.getListRegisteredDistributionArea());
+            agentsList.addAll(DF_HELPER.getListRegisteredDonor());
+            ACLMessage msg = DF_HELPER.ACL_MESSAGE_UPDATE_TIME_EVENT;
+            msg.setContent(String.valueOf(currExecutionTime));
+            DF_HELPER.addAllReceiver(msg, agentsList);
+            this.currCreationScenarioConfig.getIterator().next();
+            this.addBehaviour(new AchieveREInitiator(this, msg) {
+                @Override
+                protected void handleAllResponses(Vector responses) {
+                    System.out.println("Llegaron todos los mensajes.");
+                }
+
+                @Override
+                public int onEnd() {
+                    super.onEnd();
+                    BI_RequestInitializatorSimulation();
+                    return 0;
+                }
+            });
+        }
+
     }
 
     public void BI_RequestInitializatorSimulation() {
@@ -197,12 +227,11 @@ public class Administrator extends Agent {
                 return 0;
             }
         });
-
     }
 
     public void BI_InitializeSimulation(String nameAgent) {
         DF_HELPER.println("SE INICIALIZA SIMULACION DE " + currCreationScenarioConfig.getName() + ", iteración "
-                + currCreationScenarioConfig.getnCurrIterations());
+                + currCreationScenarioConfig.getIterator().get());
         DF_HELPER.waitTime();
         ArrayList<Agent> agentsList = new ArrayList<>();
         agentsList.add(DF_HELPER.getAgent(nameAgent));
@@ -215,7 +244,6 @@ public class Administrator extends Agent {
 
     public void BR_EndSimulation() {
         MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_END_SIMULATION;
-        // MessageTemplate template = DF_HELPER.MESSAGE_TEMPLATE_INITIALIZE_SIMULATION;
         this.addBehaviour(new SimpleResponder(this, template) {
             CreationScenarioConfig currCreationScenario;
             ScenarioConfig scenarioConfig;
@@ -233,64 +261,40 @@ public class Administrator extends Agent {
                 ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new ArrayList<>(Arrays
                         .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
                 currCreationScenario.getSupplyActivitiesList().addAll(supplyActivitiesListResponseArrayList);
-                // System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
-                if (currCreationScenario.getIterationsPending()) {
+                if (currCreationScenario.getIterator().hasNext()) {
                     DF_HELPER.println("SIGUIENTE ITERACION");
                     BI_UpdateTimeEvent();
                 } else {
-                    currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
+                    currCreationScenario
+                            .setStateIteration(ScenarioConfig.CreationScenarioConfig.CreationScenarioConfigStates.END);
                     CreationScenarioConfig nextCreationScenario = scenarioConfig
                             .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
+                    F_PrintResults(currCreationScenario);
                     if (Objects.nonNull(nextCreationScenario)) {
                         DF_HELPER.println("SIGUIENTE ESCENARIO " + nextCreationScenario.getName());
-                        currCreationScenario = nextCreationScenario;
-                        F_UpdateState();
+                        setCurrCreationScenarioConfig(nextCreationScenario);
+                        BI_ReinitializeData();
                     } else {
                         DF_HELPER.println("NO QUEDAN MAS ESCENARIO");
-                        F_PrintResults();
+                        System.exit(0);
                     }
                 }
             }
         });
+    }
 
-        // this.addBehaviour(new SimpleResponder(this, template) {
-        // CreationScenarioConfig currCreationScenario;
-        // ScenarioConfig scenarioConfig;
-
-        // public void setValues() {
-        // scenarioConfig = getScenarioConfig();
-        // currCreationScenario = getCurrCreationScenarioConfig();
+    public void F_PrintResults(CreationScenarioConfig creationScenarioConfig) {
+        DF_HELPER.println("PRINTIN RESULTS OF " + creationScenarioConfig.getName());
+        FileGenerator fileteGenerator = new FileGenerator();
+        fileteGenerator.generateFile(creationScenarioConfig.getName(),
+                creationScenarioConfig.getSupplyActivitiesList());
+        // for (CreationScenarioConfig creationScenarioConfig :
+        // this.scenarioConfig.getCreationScenarioConfigList()) {
+        // fileteGenerator.generateFile(creationScenarioConfig.getName(),
+        // creationScenarioConfig.getSupplyActivitiesList());
         // }
-
-        // @Override
-        // protected void handleAclMessage(ACLMessage msg) {
-        // DF_HELPER.println(myAgent, msg);
-        // setValues();
-        // String jsonContent = msg.getContent();
-        // ArrayList<SupplyActivity> supplyActivitiesListResponseArrayList = new
-        // ArrayList<>(Arrays
-        // .asList(new Gson().fromJson(jsonContent, SupplyActivity[].class)));
-        // System.out.println(getCurrCreationScenarioConfig().getSupplyActivitiesList().size());
-        // if (currCreationScenario.getIterationsPending()) {
-        // DF_HELPER.println("SIGUIENTE ITERACION");
-        // BI_UpdateTimeEvent();
-        // } else {
-        // currCreationScenario.setStateIteration(ParametersConfig.STATE_SCENARIO_CONFIG_END);
-        // currCreationScenario.setSupplyActivitiesList(supplyActivitiesListResponseArrayList);
-        // CreationScenarioConfig nextCreationScenario = scenarioConfig
-        // .getNextCreationScenarioConfigEnable(ParametersConfig.STATE_SCENARIO_CONFIG_NOT_INITIALIZE);
-        // if (Objects.nonNull(nextCreationScenario)) {
-        // DF_HELPER.println("SIGUIENTE ESCENARIO " + nextCreationScenario.getName());
-        // currCreationScenario = nextCreationScenario;
-        // F_UpdateState();
-        // } else {
-        // DF_HELPER.println("NO QUEDAN MAS ESCENARIO");
-        // F_PrintResults();
-        // }
-        // }
-        // // BI_ConsultRequiredSupply();
-        // }
-        // });
+        // DF_HELPER.println("FINISHING EXECUTION...");
+        // System.exit(0);
     }
 
     public void orderInitializatorsSimulators(ArrayList<ACLMessage> responsesList, String type) {
@@ -303,19 +307,6 @@ public class Administrator extends Agent {
                         : Integer.compare(value2, value1);
             }
         });
-    }
-
-    public void F_PrintResults() {
-        DF_HELPER.println("PRINT RESULTS");
-        FileGenerator fileteGenerator = new FileGenerator();
-        for (CreationScenarioConfig creationScenarioConfig : this.scenarioConfig.getCreationScenarioConfigList()) {
-            // System.out.println(creationScenarioConfig);
-            // System.out.println(creationScenarioConfig.getSupplyActivitiesList().size());
-            // System.out.println("----");
-            fileteGenerator.generateFile(creationScenarioConfig.getName(),
-                    creationScenarioConfig.getSupplyActivitiesList());
-        }
-        System.exit(0);
     }
 
     public void BR_CreacionFinalizada() {
@@ -420,7 +411,7 @@ public class Administrator extends Agent {
                         jsonObject.addProperty("capacity", capacity);
                         trucksData.add(jsonObject);
                     }
-                    System.out.println(trucksData);
+                    // System.out.println(trucksData);
                     header = false;
                     continue;
                 }

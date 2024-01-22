@@ -16,6 +16,8 @@ import jade.proto.AchieveREResponder;
 import jade.proto.ContractNetResponder;
 import src.models.SupplyActivityTransportation;
 import src.models.SupplyActivityOrder;
+import src.behaviours.SimpleConversationResponder;
+import src.commons.CustomUnits;
 import src.commons.ParametersConfig;
 import src.models.SupplyActivity;
 import src.models.TransportationActivity;
@@ -23,14 +25,15 @@ import src.models.TransportationActivityItinerary;
 import src.models.Ubication;
 import tech.units.indriya.unit.Units;
 
-public class Truck extends Agent {
+public class Truck extends Agent implements CommonAgent {
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     private String IdCamion, PuntoInicial, NameTransportista;
     private long VelocidadVacio, VelocidadCargado, DuracionDescargas, TiempoOperacion, TotalTransportado,
             DuracionTotalViaje, DuracionAculatamiento;
     private Integer Capacidad;
-    private ArrayList<TransportationActivity> listTransportationActivities = new ArrayList<>();
-    private ArrayList<SupplyActivityOrder> listSupplyActivities = new ArrayList<>();
+    private ArrayList<TransportationActivity> listTransportationActivities;
+    private ArrayList<SupplyActivityOrder> listSupplyActivities;
+    private ArrayList<Object> listaArgumentos;
 
     public long getCapacidad() {
         return Capacidad;
@@ -62,23 +65,25 @@ public class Truck extends Agent {
 
     @Override
     protected void setup() {
-        ArrayList<Object> listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
-        this.cargarInformacionAgente(listaArgumentos);
+        listaArgumentos = new ArrayList<>(Arrays.asList(getArguments()));
+        this.cargarInformacionAgente();
+        // RESPONDERS
         this.BR_ConfirmSupplyActivity();
         DF_HELPER.BR_UpdateAgentState(this);
-        DF_HELPER.registrarServicio(this);
+        DF_HELPER.BR_ReInitializeData(this);
         this.BR_ConsultFreight();
+        DF_HELPER.registrarServicio(this);
         this.BI_RegisterCarrier();
-        // DF_HELPER.BI_CreacionFinalizada(this);
     }
 
-    public void cargarInformacionAgente(ArrayList<Object> listaArgumentos) {
+    public void cargarInformacionAgente() {
         this.enabled = true;
         this.setNameTransportista(listaArgumentos.get(0).toString());
         this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(1)),
                 Double.parseDouble((String) listaArgumentos.get(2))));
-        // System.out.println(listaArgumentos.get(3));
         this.setCapacidad((Integer) listaArgumentos.get(3));
+        this.listTransportationActivities = new ArrayList<>();
+        this.listSupplyActivities = new ArrayList<>();
     }
 
     public Boolean getEnabled() {
@@ -141,18 +146,18 @@ public class Truck extends Agent {
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_REQUEST_FREIGHT));
         this.addBehaviour(new ContractNetResponder(this, template) {
             ArrayList<SupplyActivityOrder> listSupplyActivities;
+            Boolean enabled;
 
-            @Override
-            public void onStart() {
+            public void getValues() {
+                this.enabled = getEnabled();
                 this.listSupplyActivities = getListSupplyActivities();
-                // TODO Auto-generated method stub
-                super.onStart();
             }
 
             protected ACLMessage handleCfp(ACLMessage cfp) {
                 DF_HELPER.println(this.getAgent(), cfp);
+                getValues();
                 ACLMessage reply = cfp.createReply();
-                if (getEnabled()) {
+                if (this.enabled) {
                     if (searchRoute()) {
                         SupplyActivity supplyActivity = (SupplyActivity) new Gson()
                                 .fromJson(cfp.getContent(), SupplyActivity.class);
@@ -174,18 +179,22 @@ public class Truck extends Agent {
                                     supplyActivity.getSupplyActivityRequired().getAgentName());
                             reply.setContent(new Gson().toJson(proposedTransportationActivity));
                             reply.setPerformative(ACLMessage.PROPOSE);
+                            // System.out.println("ln177");
                         } else {
                             reply.setPerformative(ACLMessage.REFUSE);
+                            // System.out.println("ln180");
                         }
                         // } else {
                         // System.out.println("EL TRUCK YA TIENE ALGUNA ACTIVIDAD, DEBE TRABAJARLA");
                         // System.exit(0);
                         // }
                     } else {
+                        // System.out.println("ln187");
                         reply.setPerformative(ACLMessage.REFUSE);
                     }
                 } else {
-                    reply.setPerformative(ACLMessage.FAILURE);
+                    // System.out.println("ln190");
+                    reply.setPerformative(ACLMessage.REFUSE);
                 }
                 return reply;
             }
@@ -239,28 +248,29 @@ public class Truck extends Agent {
 
     public static long getTravelTime(Ubication supplyActivityUbication, Ubication proposedActivityUbication) {
         // Radio medio de la Tierra en metros
-        double radioTierra = ParametersConfig.pipeStandarLength(6371 * 1000, Units.METRE);
-    
+        double radioTierra = (double) CustomUnits.pipeStandarLength(6371 * 1000, Units.METRE, double.class);
+
         // Diferencias de latitud y longitud en radianes
         double dLat = Math.toRadians(proposedActivityUbication.getLatitud() - supplyActivityUbication.getLatitud());
         double dLon = Math.toRadians(proposedActivityUbication.getLongitud() - supplyActivityUbication.getLongitud());
-    
+
         // Fórmula de Haverseno
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(supplyActivityUbication.getLatitud()))
-                * Math.cos(Math.toRadians(proposedActivityUbication.getLatitud())) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        * Math.cos(Math.toRadians(proposedActivityUbication.getLatitud())) * Math.sin(dLon / 2)
+                        * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
         // Distancia en metros
         double distancia = radioTierra * c;
-    
-        // Velocidad en metros por segundo (asegúrate de que la velocidad esté en esta unidad)
+
+        // Velocidad en metros por segundo (asegúrate de que la velocidad esté en esta
+        // unidad)
         double velocity = ParametersConfig.STANDARD_SPEED;
-        System.out.println(distancia / velocity);
+        // System.out.println(distancia / velocity);
         // Tiempo en segundos
         return (long) (distancia / velocity);
     }
-    
 
     public static int getMaxLoad(int capacidadCamion, int pesoCargar) {
         if (capacidadCamion <= 0 || pesoCargar <= 0) {
@@ -376,6 +386,14 @@ public class Truck extends Agent {
         } else {
             return timeRequired;
         }
+    }
+
+    public ArrayList<Object> getListaArgumentos() {
+        return listaArgumentos;
+    }
+
+    public void setListaArgumentos(ArrayList<Object> listaArgumentos) {
+        this.listaArgumentos = listaArgumentos;
     }
 
 }
