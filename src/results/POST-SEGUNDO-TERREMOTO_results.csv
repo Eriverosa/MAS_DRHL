@@ -1,0 +1,15 @@
+horaInicioViajeCarga;tiempoViajeCarga;horaLlegadaViajeCarga;horaInicioCarga;tiempoCarga;horaFinCarga;horaInicioViajeDescarga;tiempoViajeDescarga;horaLlegadaViajeDescarga;horaInicioDescarga;tiempoDescarga;horaFinDescarga;pointNameSupplyActivityProposed;pointNameSupplyActivityRequired;pointNameSupplyActivityTransportation;ayudaRequerida;ayudaTransportada;tiempoDuraciónConversacion (ms);cantidadNegociacionesTotal
+0;165;165;165;840;1005;1005;61;1066;1066;420;1486;Donador3;PuntoDistribucion9;Transporte1_remolque_1;420;420;6.4642885E9;12
+0;165;165;165;800;965;965;120;1085;1085;400;1485;Donador3;PuntoDistribucion4;Transporte1_7ton_4;400;400;5.5489088E9;12
+0;182;182;182;760;942;942;108;1050;1050;380;1430;Donador1;PuntoDistribucion13;Transporte1_megatrailer_1;380;380;5.0550927E9;13
+0;182;182;182;700;882;882;214;1096;1096;350;1446;Donador1;PuntoDistribucion23;Transporte1_7ton_4;350;350;4.8119892E9;12
+0;394;394;394;700;1094;1094;371;1465;1465;350;1815;Donador10;PuntoDistribucion2;Transporte10_megatrailer_1;350;350;5.4343775E9;10
+0;173;173;173;660;833;833;146;979;979;330;1309;Donador10;PuntoDistribucion18;Transporte1_megatrailer_1;330;330;4.4744282E9;13
+0;394;394;394;620;1014;1014;386;1400;1400;310;1710;Donador10;PuntoDistribucion15;Transporte10_20ton_1;310;310;4.2267423E9;13
+0;365;365;365;600;965;965;397;1362;1362;300;1662;Donador3;PuntoDistribucion5;Transporte10_trailer_1;300;300;3.7924548E9;9
+0;394;394;394;600;994;994;216;1210;1210;300;1510;Donador10;PuntoDistribucion25;Transporte10_remolque_4;300;300;3.356397E9;12
+0;333;333;333;460;793;793;376;1169;1169;230;1399;Donador1;PuntoDistribucion20;Transporte10_remolque_4;290;230;2.2150071E9;11
+0;173;173;173;402;575;575;126;701;701;201;902;Donador10;PuntoDistribucion14;Transporte1_remolque_1;280;201;2.1644079E9;8
+0;365;365;365;4;369;369;331;700;700;2;702;Donador3;PuntoDistribucion10;Transporte10_20ton_2;270;2;5.93192E7;6
+numeroNegociaciones;tiempoMinimoProcesamiento;tiempoMaximoProcesamiento;tiempoPromedioProcesamiento;tiempoTotal
+131;59;6464;3966;47603

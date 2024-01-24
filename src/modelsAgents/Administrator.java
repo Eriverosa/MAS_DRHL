@@ -288,13 +288,6 @@ public class Administrator extends Agent {
         FileGenerator fileteGenerator = new FileGenerator();
         fileteGenerator.generateFile(creationScenarioConfig.getName(),
                 creationScenarioConfig.getSupplyActivitiesList());
-        // for (CreationScenarioConfig creationScenarioConfig :
-        // this.scenarioConfig.getCreationScenarioConfigList()) {
-        // fileteGenerator.generateFile(creationScenarioConfig.getName(),
-        // creationScenarioConfig.getSupplyActivitiesList());
-        // }
-        // DF_HELPER.println("FINISHING EXECUTION...");
-        // System.exit(0);
     }
 
     public void orderInitializatorsSimulators(ArrayList<ACLMessage> responsesList, String type) {
@@ -417,13 +410,13 @@ public class Administrator extends Agent {
                 }
                 ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
                 for (int i = n_columns; i < datos.size(); i++) {
-                    var carrierName = datos.get(0);
-                    var initialUbicationLat = datos.get(1);
-                    var initialUbicationLon = datos.get(2);
+                    String carrierName = datos.get(0);
+                    String initialUbicationLat = datos.get(1);
+                    String initialUbicationLon = datos.get(2);
                     for (int j = 1; j <= Integer.parseInt(datos.get(i)); j++) {
                         String name = trucksData.get(i - n_columns).get("name").getAsString();
                         int capacity = trucksData.get(i - n_columns).get("capacity").getAsInt();
-                        var nameTruck = carrierName + "_" + name + "_"
+                        String nameTruck = carrierName + "_" + name + "_"
                                 + Integer.toString(j);
                         configObject.getContainerController()
                                 .createNewAgent(nameTruck, configObject.getClassRoute(),

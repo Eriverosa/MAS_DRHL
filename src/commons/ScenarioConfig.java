@@ -16,41 +16,41 @@ public class ScenarioConfig {
     // public final AgentConfig agentConfig;
 
     public ScenarioConfig() {
-        // creationScenarioConfigList.add(new CreationScenarioConfig("PRE-PRINCIPAL-TERREMOTO", 100,
-        //         Arrays.asList(
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 10),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 10),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 0),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("POST-PRINCIPAL-TERREMOTO", 2,
+        creationScenarioConfigList.add(new CreationScenarioConfig("PRE-PRINCIPAL-TERREMOTO", 100,
+                Arrays.asList(
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 10),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 10),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 0),
+                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
+        creationScenarioConfigList.add(new CreationScenarioConfig("POST-PRINCIPAL-TERREMOTO", 100,
                 Arrays.asList(
                         new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 8),
                         new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 90),
                         new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 8),
                         new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 10),
                         new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        // creationScenarioConfigList.add(new CreationScenarioConfig("POST-REPLICAS", 100,
-        //         Arrays.asList(
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 7),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 85),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 7),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 15),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        // creationScenarioConfigList.add(new CreationScenarioConfig("POST-TSUNAMI", 100,
-        //         Arrays.asList(
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 6),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 75),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 6),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 18),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        // creationScenarioConfigList.add(new CreationScenarioConfig("POST-SEGUNDO-TERREMOTO", 100,
-        //         Arrays.asList(
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 3),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 50),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 3),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 23),
-        //                 new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
+        creationScenarioConfigList.add(new CreationScenarioConfig("POST-REPLICAS", 100,
+                Arrays.asList(
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 7),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 85),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 7),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 15),
+                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
+        creationScenarioConfigList.add(new CreationScenarioConfig("POST-TSUNAMI", 100,
+                Arrays.asList(
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 6),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 75),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 6),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 18),
+                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
+        creationScenarioConfigList.add(new CreationScenarioConfig("POST-SEGUNDO-TERREMOTO", 100,
+                Arrays.asList(
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 3),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 50),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 3),
+                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 23),
+                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
     }
 
     public CreationScenarioConfig getNextCreationScenarioConfigEnable(String desiredState) {

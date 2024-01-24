@@ -28,6 +28,7 @@ public class SupplyActivityOrder {
             pointNameSupplyActivityTransportation;
     private String status;
     private NegotiationTime negotiationTime;
+    private int negotiationQuantity;
     // private long horaSiguienteRequerimiento;
 
     public SupplyActivityOrder(SupplyActivity supplyActivity) {
@@ -57,6 +58,8 @@ public class SupplyActivityOrder {
                 supplyActivity.getSupplyActivityRequired().getNegotiationTime().getElapsedTime()
                         + supplyActivity.getSupplyActivityProposed().getNegotiationTime().getElapsedTime()
                         + supplyActivity.getSupplyActivityTransportation().getNegotiationTime().getElapsedTime());
+        this.negotiationQuantity = 1 + supplyActivity.getSupplyActivityProposed().getNegotiationQuantity()
+                + supplyActivity.getSupplyActivityTransportation().getNegotiationQuantity();
     }
 
     public String toString(boolean prettyFormat) {
@@ -68,6 +71,8 @@ public class SupplyActivityOrder {
         }
         return gson.toJson(this);
     }
+
+    
 
     public long getHoraInicioViajeCarga() {
         return horaInicioViajeCarga;
@@ -211,6 +216,14 @@ public class SupplyActivityOrder {
 
     public void setNegotiationTime(NegotiationTime negotiationTime) {
         this.negotiationTime = negotiationTime;
+    }
+
+    public int getNegotiationQuantity() {
+        return negotiationQuantity;
+    }
+
+    public void setNegotiationQuantity(int negotiationQuantity) {
+        this.negotiationQuantity = negotiationQuantity;
     }
 
 }

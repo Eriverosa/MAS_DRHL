@@ -1,1 +1,1 @@
-http://localhost:7778/acc
+http://LPALOMINOS01.ITI.CL:7778/acc
