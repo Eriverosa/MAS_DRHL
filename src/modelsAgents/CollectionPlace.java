@@ -499,12 +499,12 @@ public class CollectionPlace extends Agent implements CommonAgent {
                         SupplyActivityTransportation.class);
                 SupplyActivityTransportation obj2 = new Gson().fromJson(msg2.getContent(),
                         SupplyActivityTransportation.class);
-                double value1 = obj1.getHoraInicioCarga() * ParametersConfig.PROPOSED_START_TIME_WEIGHING
-                        + obj1.getHoraFinDescarga() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
-                        + obj1.getCantidadTrasladada() * ParametersConfig.PROPOSED_QUANTITY_TRANSPORTED_WEIGHING;
-                double value2 = obj2.getHoraInicioCarga() * ParametersConfig.PROPOSED_START_TIME_WEIGHING
-                        + obj2.getHoraFinDescarga() * ParametersConfig.PROPOSED_END_TIME_WEIGHING
-                        + obj2.getCantidadTrasladada() * ParametersConfig.PROPOSED_QUANTITY_TRANSPORTED_WEIGHING;
+                double value1 = obj1.getHoraInicioCarga() * ParametersConfig.PROPOSED_TRANSPORTATION_START_TIME_WEIGHING
+                        + obj1.getHoraFinDescarga() * ParametersConfig.PROPOSED_TRANSPORTATION_END_TIME_WEIGHING
+                        + obj1.getCantidadTrasladada() * ParametersConfig.PROPOSED_TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING;
+                double value2 = obj2.getHoraInicioCarga() * ParametersConfig.PROPOSED_TRANSPORTATION_START_TIME_WEIGHING
+                        + obj2.getHoraFinDescarga() * ParametersConfig.PROPOSED_TRANSPORTATION_END_TIME_WEIGHING
+                        + obj2.getCantidadTrasladada() * ParametersConfig.PROPOSED_TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING;
                 return type.equals(ParametersConfig.ASC_STRING) ? Double.compare(value1, value2)
                         : Double.compare(value2, value1);
             }
