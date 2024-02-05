@@ -461,15 +461,13 @@ public class CollectionPlace extends Agent implements CommonAgent {
                 Gson gson = new Gson();
                 SupplyActivityRequired obj1 = gson.fromJson(aclMessage1.getContent(), SupplyActivityRequired.class);
                 SupplyActivityRequired obj2 = gson.fromJson(aclMessage2.getContent(), SupplyActivityRequired.class);
-                // RequiredSupply obj1 = new RequiredSupply(aclMessage1.getContent());
-                // RequiredSupply obj2 = new RequiredSupply(aclMessage2.getContent());
-                double weigh_p_1 = ParametersConfig.REQUIRED_SUPPLY_PERSONAS_WEIGHING * obj1.getCantidadPersonas();
-                double distance_1 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING
+                double weigh_p_1 = ParametersConfig.REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT * obj1.getCantidadPersonas();
+                double distance_1 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT
                         * (Math.sqrt(Math.pow(obj1.getUbicacion().getLatitud() - getUbication().getLatitud(), 2)
                                 + Math.pow(obj1.getUbicacion().getLongitud() - getUbication().getLongitud(), 2)));
                 double weigh_final_1 = weigh_p_1 + distance_1;
-                double weigh_p_2 = ParametersConfig.REQUIRED_SUPPLY_PERSONAS_WEIGHING * obj2.getCantidadPersonas();
-                double distance_2 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING
+                double weigh_p_2 = ParametersConfig.REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT * obj2.getCantidadPersonas();
+                double distance_2 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT
                         * (Math.sqrt(Math.pow(obj2.getUbicacion().getLatitud() - getUbication().getLatitud(), 2)
                                 + Math.pow(obj2.getUbicacion().getLongitud() - getUbication().getLongitud(), 2)));
                 double weigh_final_2 = weigh_p_2 + distance_2;
@@ -481,12 +479,21 @@ public class CollectionPlace extends Agent implements CommonAgent {
     public void orderProposedSupplyObj(ArrayList<ACLMessage> responsesList) {
         Collections.sort(responsesList, new Comparator<ACLMessage>() {
             @Override
-            public int compare(ACLMessage msg1, ACLMessage msg2) {
-                SupplyActivityProposed obj1 = new Gson().fromJson(msg1.getContent(), SupplyActivityProposed.class);
-                SupplyActivityProposed obj2 = new Gson().fromJson(msg2.getContent(), SupplyActivityProposed.class);
-                int content1 = obj1.getMaterialStock().getTotalAmountHelpByPerson();
-                int content2 = obj2.getMaterialStock().getTotalAmountHelpByPerson();
-                return Integer.compare(content2, content1);
+            public int compare(ACLMessage aclMessage1, ACLMessage aclMessage2) {
+                Gson gson = new Gson();
+                SupplyActivityProposed obj1 = gson.fromJson(aclMessage1.getContent(), SupplyActivityProposed.class);
+                SupplyActivityProposed obj2 = gson.fromJson(aclMessage2.getContent(), SupplyActivityProposed.class);
+                double weigh_p_1 = ParametersConfig.PROPOSED_AMOUNT_HELP_WEIGHING_PERCENT * obj1.getMaterialStock().getTotalAmountHelpByPerson();
+                double distance_1 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT
+                        * (Math.sqrt(Math.pow(obj1.getUbicacion().getLatitud() - getUbication().getLatitud(), 2)
+                                + Math.pow(obj1.getUbicacion().getLongitud() - getUbication().getLongitud(), 2)));
+                double weigh_final_1 = weigh_p_1 + distance_1;
+                double weigh_p_2 = ParametersConfig.PROPOSED_AMOUNT_HELP_WEIGHING_PERCENT * obj2.getMaterialStock().getTotalAmountHelpByPerson();
+                double distance_2 = ParametersConfig.REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT
+                        * (Math.sqrt(Math.pow(obj2.getUbicacion().getLatitud() - getUbication().getLatitud(), 2)
+                                + Math.pow(obj2.getUbicacion().getLongitud() - getUbication().getLongitud(), 2)));
+                double weigh_final_2 = weigh_p_2 + distance_2;
+                return Double.compare(weigh_final_2, weigh_final_1);
             }
         });
     }
@@ -499,30 +506,30 @@ public class CollectionPlace extends Agent implements CommonAgent {
                         SupplyActivityTransportation.class);
                 SupplyActivityTransportation obj2 = new Gson().fromJson(msg2.getContent(),
                         SupplyActivityTransportation.class);
-                double value1 = obj1.getHoraInicioCarga() * ParametersConfig.PROPOSED_TRANSPORTATION_START_TIME_WEIGHING
-                        + obj1.getHoraFinDescarga() * ParametersConfig.PROPOSED_TRANSPORTATION_END_TIME_WEIGHING
-                        + obj1.getCantidadTrasladada() * ParametersConfig.PROPOSED_TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING;
-                double value2 = obj2.getHoraInicioCarga() * ParametersConfig.PROPOSED_TRANSPORTATION_START_TIME_WEIGHING
-                        + obj2.getHoraFinDescarga() * ParametersConfig.PROPOSED_TRANSPORTATION_END_TIME_WEIGHING
-                        + obj2.getCantidadTrasladada() * ParametersConfig.PROPOSED_TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING;
+                double value1 = obj1.getHoraInicioCarga() * ParametersConfig.TRANSPORTATION_START_TIME_WEIGHING_PERCENT
+                        + obj1.getHoraFinDescarga() * ParametersConfig.TRANSPORTATION_END_TIME_WEIGHING_PERCENT
+                        + obj1.getCantidadTrasladada() * ParametersConfig.TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING_PERCENT;
+                double value2 = obj2.getHoraInicioCarga() * ParametersConfig.TRANSPORTATION_START_TIME_WEIGHING_PERCENT
+                        + obj2.getHoraFinDescarga() * ParametersConfig.TRANSPORTATION_END_TIME_WEIGHING_PERCENT
+                        + obj2.getCantidadTrasladada() * ParametersConfig.TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING_PERCENT;
                 return type.equals(ParametersConfig.ASC_STRING) ? Double.compare(value1, value2)
                         : Double.compare(value2, value1);
             }
         });
     }
 
-    public void orderConsultProposedSupplyObj(ArrayList<ACLMessage> responsesList) {
-        Collections.sort(responsesList, new Comparator<ACLMessage>() {
-            @Override
-            public int compare(ACLMessage msg1, ACLMessage msg2) {
-                // System.out.println(msg1.);
-                int content1 = Integer.parseInt(msg1.getContent());
-                int content2 = Integer.parseInt(msg2.getContent());
-                return Integer.compare(content2, content1);
-            }
-        });
-        // No es necesario retornar nada, ya que la lista se ordena directamente
-    }
+    // public void orderConsultProposedSupplyObj(ArrayList<ACLMessage> responsesList) {
+    //     Collections.sort(responsesList, new Comparator<ACLMessage>() {
+    //         @Override
+    //         public int compare(ACLMessage msg1, ACLMessage msg2) {
+    //             // System.out.println(msg1.);
+    //             int content1 = Integer.parseInt(msg1.getContent());
+    //             int content2 = Integer.parseInt(msg2.getContent());
+    //             return Integer.compare(content2, content1);
+    //         }
+    //     });
+    //     // No es necesario retornar nada, ya que la lista se ordena directamente
+    // }
 
     public MaterialStock getMaterialStock() {
         return materialStock;

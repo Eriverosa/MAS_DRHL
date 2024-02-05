@@ -19,7 +19,7 @@ public class ScenarioConfig {
         creationScenarioConfigList.add(new CreationScenarioConfig("PRE-PRINCIPAL-TERREMOTO", 100,
                 Arrays.asList(
                         new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 10),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 100),
+                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 10),
                         new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 10),
                         new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 0),
                         new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));

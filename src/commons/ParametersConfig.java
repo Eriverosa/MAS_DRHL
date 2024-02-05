@@ -22,19 +22,23 @@ public class ParametersConfig {
         protected static final Unit<Speed> STANDARD_SPEED_UNIT = CustomUnits.METRE_PER_SECOND;
         protected static final Unit<Time> STANDARD_RESULTS_TIME_UNIT = CustomUnits.MILLISECOND;
 
-        public final static double REQUIRED_SUPPLY_PERSONAS_WEIGHING = 0.8,
-                        REQUIRED_SUPPLY_DISTANCIA_WEIGHING = 0.2,
-                        REQUIRED_PROPOSED_AMOUNT_HELP_WEIGHING = 0.8,
-                        REQUIRED_PROPOSED_DISTANCIA_WEIGHING = 0.2,
-                        PROPOSED_TRANSPORTATION_START_TIME_WEIGHING = 1, 
-                        PROPOSED_TRANSPORTATION_END_TIME_WEIGHING = 0,
-                        PROPOSED_TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING = 0;
+        // PERCENTAGE
+        public final static double REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT = 1;
+        public final static double REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT = 0;
+        public final static double PROPOSED_AMOUNT_HELP_WEIGHING_PERCENT = 1;
+        public final static double PROPOSED_DISTANCIA_WEIGHING_PERCENT = 0;
+        public final static double TRANSPORTATION_START_TIME_WEIGHING_PERCENT = 1;
+        public final static double TRANSPORTATION_END_TIME_WEIGHING_PERCENT = 0;
+        public final static double TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING_PERCENT = 0;
+        public final static double DISTRIBUTION_CANTIDAD_MINIMA_STOCK_PERCENT = 0.75;
+        public final static double DONOR_CANTIDAD_MINIMA_STOCK_PERCENT = 0.20;
+
         public final static Integer AMOUNT_BY_PERSON_CC = 2500;
         public final static long DELAY_BY_PERSON_TIME = (long) CustomUnits.pipeStandarTime(1, CustomUnits.MINUTE,
                         long.class);
         public final static long EXECUTION_INIT_TIME = (long) CustomUnits.pipeStandarTime(0, CustomUnits.MINUTE,
                         long.class);
-        public final static long EXECUTION_ADD_TIME = (long) CustomUnits.pipeStandarTime(30, CustomUnits.MINUTE,
+        public final static long EXECUTION_ADD_TIME = (long) CustomUnits.pipeStandarTime(5, CustomUnits.MINUTE,
                         long.class);
         public final static double LOADED_SPEED = (double) CustomUnits.pipeStandarSpeed(30.0,
                         CustomUnits.KILOMETRE_PER_HOUR, double.class);
@@ -42,10 +46,6 @@ public class ParametersConfig {
                         CustomUnits.KILOMETRE_PER_HOUR, double.class);
         public final static double STANDARD_SPEED = (double) CustomUnits.pipeStandarSpeed(50.0,
                         CustomUnits.KILOMETRE_PER_HOUR, double.class);
-
-        // PERCENTAGE
-        public final static double DISTRIBUTION_CANTIDAD_MINIMA_STOCK_PERCENT = 0.75;
-        public final static double DONOR_CANTIDAD_MINIMA_STOCK_PERCENT = 0.20;
 
         // CONSTANTS
         public final static long ERROR_LONG = -1;
@@ -59,6 +59,10 @@ public class ParametersConfig {
         public final static String STATE_SUPPLY_ACTIVITY_PENDING = "STATE_SUPPLY_ACTIVITY_PENDING",
                         STATE_SUPPLY_ACTIVITY_DOING = "STATE_SUPPLY_ACTIVITY_DOING",
                         STATE_SUPPLY_ACTIVITY_DONE = "STATE_SUPPLY_ACTIVITY_DONE";
+
+        public final static String NAME_ACTIVITY_REQUIRED = "NAME_ACTIVITY_REQUIRED",
+                        NAME_ACTIVITY_PROPOSED = "NAME_ACTIVITY_PROPOSED",
+                        NAME_ACTIVITY_TRANSPORTATION = "NAME_ACTIVITY_TRANSPORTATION";
         //
         public final static int N_TEST = 7;
 

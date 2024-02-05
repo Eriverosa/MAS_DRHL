@@ -17,19 +17,12 @@ public class SupplyActivityOrder {
     private long horaInicioViajeDescarga, tiempoViajeDescarga, horaLlegadaViajeDescarga, horaInicioDescarga,
             tiempoDescarga,
             horaFinDescarga;
-    // private long horaInicioViajeDescarga, tiempoViajeDescarga,
-    // horaLlegadaViajeDescarga, horaInicioDescarga,
-    // tiempoDescarga, horaFinDescarga;
-    // private String SupplyPoint;
     private MaterialStock materialStock;
-    // private long tiempoViajeInicioActividad, horaInicioCarga,
-    // tiempoViajeFinActividad, horaFinCarga;
     private String pointNameSupplyActivityProposed, pointNameSupplyActivityRequired,
             pointNameSupplyActivityTransportation;
     private String status;
     private NegotiationTime negotiationTime;
     private int negotiationQuantity;
-    // private long horaSiguienteRequerimiento;
 
     public SupplyActivityOrder(SupplyActivity supplyActivity) {
         this.horaInicioViajeCarga = supplyActivity.getSupplyActivityTransportation().getHoraInicioViajeCarga();

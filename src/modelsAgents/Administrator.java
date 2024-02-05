@@ -288,6 +288,8 @@ public class Administrator extends Agent {
         FileGenerator fileteGenerator = new FileGenerator();
         fileteGenerator.generateFile(creationScenarioConfig.getName(),
                 creationScenarioConfig.getSupplyActivitiesList());
+        fileteGenerator.generateFileDisaggregated(creationScenarioConfig.getName(),
+                creationScenarioConfig.getSupplyActivitiesList());
     }
 
     public void orderInitializatorsSimulators(ArrayList<ACLMessage> responsesList, String type) {
