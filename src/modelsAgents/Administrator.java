@@ -25,8 +25,8 @@ import jade.proto.SubscriptionInitiator;
 import jade.proto.SubscriptionResponder;
 import jade.wrapper.StaleProxyException;
 import src.behaviours.SimpleResponder;
-// import src.commons.AgentConfig;
-import src.commons.AgentConfig;
+// import src.commons.ContainerAgentConfig;
+import src.commons.ContainerAgentConfig;
 import src.commons.FileGenerator;
 import src.commons.ParametersConfig;
 import src.commons.ScenarioConfig;
@@ -47,7 +47,7 @@ public class Administrator extends Agent {
     private long currExecutionTime;
     private boolean first = true;
     private ScenarioConfig scenarioConfig;
-    // private AgentConfig agentConfig;
+    // private ContainerAgentConfig ContainerAgentConfig;
     private CreationScenarioConfig currCreationScenarioConfig;
 
     @Override
@@ -60,19 +60,19 @@ public class Administrator extends Agent {
     }
 
     public void loadDataGenerateAgent() {
-        CreationAgentConfig currAgentConfig = AgentConfig.getNextCreationAgentConfigEnable();
+        CreationAgentConfig currAgentConfig = ContainerAgentConfig.getNextCreationAgentConfigEnable();
         if (!Objects.isNull(currAgentConfig)) {
-            if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+            if (Objects.equals(currAgentConfig.getClassName(), ContainerAgentConfig.TRANSPORTER_CONFIG.getClassName())) {
                 this.crearAgentesTransporte();
-            } else if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.TRUCK_CONFIG.getClassName())) {
+            } else if (Objects.equals(currAgentConfig.getClassName(), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
                 this.crearAgentesCamiones();
-            } else if (Objects.equals(currAgentConfig.getClassName(), AgentConfig.DONOR_CONFIG.getClassName())) {
+            } else if (Objects.equals(currAgentConfig.getClassName(), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
                 this.crearAgentesDonador();
             } else if (Objects.equals(currAgentConfig.getClassName(),
-                    AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                    ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
                 this.crearAgentesPuntoDistribucion();
             } else if (Objects.equals(currAgentConfig.getClassName(),
-                    AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                    ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
                 this.crearAgentesLugarAcopio();
             } else {
                 System.out.println("Error");
@@ -188,7 +188,7 @@ public class Administrator extends Agent {
 
     public void BI_RequestInitializatorSimulation() {
         ArrayList<Agent> agentsList = new ArrayList<>(
-                DF_HELPER.getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG));
+                DF_HELPER.getAgentsList(ContainerAgentConfig.COLLECTION_PLACE_CONFIG));
         ACLMessage msg = DF_HELPER.ACL_MESSAGE_REQUEST_INITIALIZATOR_SIMULATION;
         DF_HELPER.addAllReceiver(msg, agentsList);
 
@@ -308,11 +308,11 @@ public class Administrator extends Agent {
         MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),
                 MessageTemplate.MatchConversationId(DF_HELPER.IC_FINISHED_CREATION));
         addBehaviour(new AchieveREResponder(this, template) {
-            // AgentConfig agentConfig;
+            // ContainerAgentConfig ContainerAgentConfig;
             CreationAgentConfig currObj = null;
 
             public void setValues() {
-                // agentConfig = getAgentConfig();
+                // ContainerAgentConfig = getAgentConfig();
             }
 
             @Override
@@ -322,18 +322,18 @@ public class Administrator extends Agent {
                 System.out.println("Mensaje recibido de " + request.getSender().getLocalName());
                 Integer tipo = ACLMessage.AGREE;
                 // Integer numberEnabled = 0, initialCreated = 0;
-                if (Objects.equals(request.getContent(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
-                    currObj = AgentConfig.TRANSPORTER_CONFIG;
-                } else if (Objects.equals(request.getContent(), AgentConfig.TRUCK_CONFIG.getClassName())) {
-                    currObj = AgentConfig.TRUCK_CONFIG;
+                if (Objects.equals(request.getContent(), ContainerAgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+                    currObj = ContainerAgentConfig.TRANSPORTER_CONFIG;
+                } else if (Objects.equals(request.getContent(), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
+                    currObj = ContainerAgentConfig.TRUCK_CONFIG;
                 } else if (Objects.equals(request.getContent(),
-                        AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
-                    currObj = AgentConfig.COLLECTION_PLACE_CONFIG;
+                        ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                    currObj = ContainerAgentConfig.COLLECTION_PLACE_CONFIG;
                 } else if (Objects.equals(request.getContent(),
-                        AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
-                    currObj = AgentConfig.DISTRIBUTION_AREA_CONFIG;
-                } else if (Objects.equals(request.getContent(), AgentConfig.DONOR_CONFIG.getClassName())) {
-                    currObj = AgentConfig.DONOR_CONFIG;
+                        ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                    currObj = ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG;
+                } else if (Objects.equals(request.getContent(), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
+                    currObj = ContainerAgentConfig.DONOR_CONFIG;
                 } else {
                     System.out.println("No deberia ir acá");
                     System.exit(-1);
@@ -357,7 +357,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesTransporte() {
-        CreationAgentConfig configObject = AgentConfig.TRANSPORTER_CONFIG;
+        CreationAgentConfig configObject = ContainerAgentConfig.TRANSPORTER_CONFIG;
         // ContainerController containerObject = TRANSPORTER_CONTAINER_CONTROLLER;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
@@ -381,7 +381,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesCamiones() {
-        CreationAgentConfig configObject = AgentConfig.TRUCK_CONFIG;
+        CreationAgentConfig configObject = ContainerAgentConfig.TRUCK_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -434,7 +434,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesPuntoDistribucion() {
-        CreationAgentConfig configObject = AgentConfig.DISTRIBUTION_AREA_CONFIG;
+        CreationAgentConfig configObject = ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG;
 
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
@@ -464,7 +464,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesDonador() {
-        CreationAgentConfig configObject = AgentConfig.DONOR_CONFIG;
+        CreationAgentConfig configObject = ContainerAgentConfig.DONOR_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -491,7 +491,7 @@ public class Administrator extends Agent {
     }
 
     public void crearAgentesLugarAcopio() {
-        CreationAgentConfig configObject = AgentConfig.COLLECTION_PLACE_CONFIG;
+        CreationAgentConfig configObject = ContainerAgentConfig.COLLECTION_PLACE_CONFIG;
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
@@ -550,3 +550,6 @@ public class Administrator extends Agent {
     }
 
 }
+
+
+

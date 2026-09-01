@@ -27,7 +27,7 @@ import jade.proto.ProposeResponder;
 import jade.proto.SimpleAchieveREResponder;
 import jade.proto.SubscriptionResponder;
 import jade.proto.TwoPhResponder;
-// import src.commons.AgentConfig;
+// import src.commons.ContainerAgentConfig;
 import src.models.MaterialStock;
 import src.models.SupplyActivityProposed;
 import src.models.SupplyActivityTransportation;
@@ -35,9 +35,9 @@ import src.models.NegotiationTime;
 import src.models.SupplyActivityRequired;
 import src.models.SupplyActivity;
 import src.models.Ubication;
-// import src.commons.AgentConfigOld;
+// import src.commons.ContainerAgentConfigOld;
 import src.behaviours.SimpleResponder;
-import src.commons.AgentConfig;
+import src.commons.ContainerAgentConfig;
 import src.commons.ParametersConfig;
 
 public class CollectionPlace extends Agent implements CommonAgent {
@@ -138,7 +138,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
     public void BI_ConsultRequiredSupply() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_REQUIRED_SUPPLY);
-        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.DISTRIBUTION_AREA_CONFIG));
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG));
         msg.setContent(String.valueOf(this.initTime));
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             protected ArrayList<SupplyActivity> pendingSupplyActivityList;
@@ -175,7 +175,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName()
+                            "No hay " + ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName()
                                     + " que puedan realizar el trabajo");
                 }
 
@@ -212,7 +212,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_PROPOSED_SUPPLY);
         msg.setContent(new Gson().toJson(supplyActivity.getSupplyActivityRequired()));
-        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.DONOR_CONFIG));
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(ContainerAgentConfig.DONOR_CONFIG));
 
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             SupplyActivity supplyActivity;
@@ -252,7 +252,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfig.DONOR_CONFIG.getClassName() + " que puedan realizar el trabajo");
+                            "No hay " + ContainerAgentConfig.DONOR_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
             }
 
@@ -276,7 +276,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
     public void BI_ConsultTransport() {
         ACLMessage msg = new ACLMessage(ACLMessage.CFP);
         msg.setConversationId(DF_HELPER.IC_CONSULT_TRANSPORTER);
-        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(AgentConfig.TRANSPORTER_CONFIG));
+        DF_HELPER.addAllReceiver(msg, DF_HELPER.getAgentsList(ContainerAgentConfig.TRANSPORTER_CONFIG));
 
         this.addBehaviour(new ContractNetInitiator(this, msg) {
             ArrayList<String> truckNameList;
@@ -300,7 +300,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfig.TRANSPORTER_CONFIG.getClassName()
+                            "No hay " + ContainerAgentConfig.TRANSPORTER_CONFIG.getClassName()
                                     + " que puedan realizar el trabajo");
                 }
 
@@ -371,7 +371,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
                     }
                 } else {
                     DF_HELPER.println(myAgent,
-                            "No hay " + AgentConfig.TRUCK_CONFIG.getClassName() + " que puedan realizar el trabajo");
+                            "No hay " + ContainerAgentConfig.TRUCK_CONFIG.getClassName() + " que puedan realizar el trabajo");
                 }
 
             }
@@ -599,3 +599,4 @@ public class CollectionPlace extends Agent implements CommonAgent {
         this.listTest = listTest;
     }
 }
+

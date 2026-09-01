@@ -1,0 +1,5 @@
+﻿{
+  "java.project.sourcePaths": ["."],
+  "java.project.outputPath": "bin_vscode",
+  "java.project.referencedLibraries": ["**/*.jar"]
+}

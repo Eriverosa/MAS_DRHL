@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
       {
+        "type": "java",
+        "name": "Main",
+        "request": "launch",
+        "mainClass": "Main",
+        "projectName": "MAS_DRHL_45984fac"
+      },
+      {
         "name": "Java Debug",
         "type": "java",
         "request": "launch",

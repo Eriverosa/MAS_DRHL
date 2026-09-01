@@ -2,55 +2,43 @@ package src.commons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-// import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-// import src.commons.AgentConfig.CreationAgentConfig;
 import src.models.SupplyActivity;
+import src.config.AppConfig;
 
+/**
+ * Configuracion de escenarios de la simulacion.
+ *
+ * IMPORTANTE: la logica interna (CreationScenarioConfig, BehaviourCreationScenarioConfig,
+ * estados, iteradores) se mantiene IDENTICA a la version original. El unico cambio
+ * es el constructor: ahora los escenarios se leen desde config.json
+ * (via ParametersConfig.getAppConfig().scenarios) en lugar de estar hardcodeados.
+ *
+ * El orden de los agentes en cada escenario se conserva igual que antes:
+ * TRANSPORTER, TRUCK, DONOR, DISTRIBUTION_AREA, COLLECTION_PLACE.
+ */
 public class ScenarioConfig {
     public final List<CreationScenarioConfig> creationScenarioConfigList = new ArrayList<>();
-    // public final AgentConfig agentConfig;
 
     public ScenarioConfig() {
-        creationScenarioConfigList.add(new CreationScenarioConfig("PRE-PRINCIPAL-TERREMOTO", 100,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 10),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 10),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 10),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 0),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("POST-PRINCIPAL-TERREMOTO", 100,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 8),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 90),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 8),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 10),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("POST-REPLICAS", 100,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 7),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 85),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 7),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 15),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("POST-TSUNAMI", 100,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 6),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 75),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 6),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 18),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
-        creationScenarioConfigList.add(new CreationScenarioConfig("POST-SEGUNDO-TERREMOTO", 100,
-                Arrays.asList(
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRANSPORTER_CONFIG, true, 3),
-                        new BehaviourCreationScenarioConfig(AgentConfig.TRUCK_CONFIG, true, 50),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DONOR_CONFIG, true, 3),
-                        new BehaviourCreationScenarioConfig(AgentConfig.DISTRIBUTION_AREA_CONFIG, true, 23),
-                        new BehaviourCreationScenarioConfig(AgentConfig.COLLECTION_PLACE_CONFIG, true, 1))));
+        AppConfig appConfig = ParametersConfig.getAppConfig();
+
+        for (AppConfig.Scenario scenario : appConfig.scenarios) {
+            AppConfig.EnabledAgents enabled = scenario.enabledAgents;
+
+            // Se respeta el mismo orden que la version original hardcodeada
+            List<BehaviourCreationScenarioConfig> behaviours = Arrays.asList(
+                    new BehaviourCreationScenarioConfig(ContainerAgentConfig.TRANSPORTER_CONFIG, true, enabled.transporter),
+                    new BehaviourCreationScenarioConfig(ContainerAgentConfig.TRUCK_CONFIG, true, enabled.truck),
+                    new BehaviourCreationScenarioConfig(ContainerAgentConfig.DONOR_CONFIG, true, enabled.donor),
+                    new BehaviourCreationScenarioConfig(ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG, true, enabled.distributionArea),
+                    new BehaviourCreationScenarioConfig(ContainerAgentConfig.COLLECTION_PLACE_CONFIG, true, enabled.collectionPlace));
+
+            creationScenarioConfigList.add(
+                    new CreationScenarioConfig(scenario.name, scenario.iterations, behaviours));
+        }
     }
 
     public CreationScenarioConfig getNextCreationScenarioConfigEnable(String desiredState) {
@@ -73,15 +61,11 @@ public class ScenarioConfig {
 
     public class CreationScenarioConfig {
         private String name;
-        // Boolean enable;
         private List<BehaviourCreationScenarioConfig> behaviourCreationScnearionConfigList;
         private Integer nIterations, nCurrIterations;
         private String stateIteration;
         private ArrayList<SupplyActivity> supplyActivitiesList = new ArrayList<>();
         private CustomIterator iterator;
-        // private CustomIterator<Integer> iterator;
-        // private Boolean first = true;
-        // private String state = CreationScenarioConfigStates.INITIALIZED;
 
         public CreationScenarioConfig(String name, Integer nIterations,
                 List<BehaviourCreationScenarioConfig> behaviourCreationScnearionConfigList) {
@@ -129,18 +113,6 @@ public class ScenarioConfig {
             return this.getStateIteration() == CreationScenarioConfigStates.INITIALIZED;
         }
 
-        // public Boolean getEnable() {
-        // return enable;
-        // }
-
-        // public void setEnable() {
-        // this.enable = true;
-        // }
-
-        // public void setDisable() {
-        // this.enable = false;
-        // }
-
         public List<BehaviourCreationScenarioConfig> getBehaviourCreationScnearionConfigList() {
             return behaviourCreationScnearionConfigList;
         }
@@ -156,10 +128,6 @@ public class ScenarioConfig {
                     .collect(Collectors.toList());
             return list.isEmpty() ? null : list.get(0);
         }
-
-        // public void setEnable(Boolean enable) {
-        // this.enable = enable;
-        // }
 
         public Integer getnIterations() {
             return nIterations;
@@ -191,7 +159,6 @@ public class ScenarioConfig {
             public final static String EXECUTING = "SCENARIO_CONFIG_EXECUTING";
             public final static String END = "SCENARIO_CONFIG_END";
         }
-
     }
 
     public class BehaviourCreationScenarioConfig {
@@ -229,10 +196,12 @@ public class ScenarioConfig {
         public void setnEnabledAgents(Integer nEnabledAgents) {
             this.nEnabledAgents = nEnabledAgents;
         }
-
     }
 
     public List<CreationScenarioConfig> getCreationScenarioConfigList() {
         return creationScenarioConfigList;
     }
 }
+
+
+

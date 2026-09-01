@@ -21,9 +21,9 @@ import jade.proto.SimpleAchieveREResponder;
 import jade.proto.SubscriptionResponder;
 import jade.tools.sniffer.Message;
 import src.behaviours.SimpleConversationResponder;
-// import src.commons.AgentConfig;
-import src.commons.AgentConfig;
-// import src.commons.agentConfig.CreationAgentConfig;
+// import src.commons.ContainerAgentConfig;
+import src.commons.ContainerAgentConfig;
+// import src.commons.ContainerAgentConfig.CreationAgentConfig;
 import src.commons.CreationAgentConfig;
 
 public class DFHelper extends Agent {
@@ -144,34 +144,34 @@ public class DFHelper extends Agent {
     }
 
     public void registrarServicio(Agent agente) {
-        if (Objects.equals(this.getClaseAgente(agente), AgentConfig.ADMINISTRATOR_CONFIG.getClassName())) {
+        if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.ADMINISTRATOR_CONFIG.getClassName())) {
             LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.TRUCK_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
             LIST_REGISTERED_TRUCK.add((Truck) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.TRANSPORTER_CONFIG.getClassName())) {
             LIST_REGISTERED_TRANSPORTER.add((Transporter) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
             LIST_REGISTERED_DISTRIBUTION_AREA.add((DistributionArea) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.DONOR_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
             LIST_REGISTERED_DONOR.add((Donor) agente);
-        } else if (Objects.equals(this.getClaseAgente(agente), AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+        } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
             LIST_REGISTERED_COLLECTION_PLACE.add((CollectionPlace) agente);
         }
     }
 
     public ArrayList<Agent> getAgentsList(CreationAgentConfig creationAgentConfig) {
         ArrayList<Agent> listAgents = new ArrayList<>();
-        if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.TRUCK_CONFIG.getClassName())) {
+        if (Objects.equals(creationAgentConfig.getClassName(), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_TRUCK);
-        } else if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.TRANSPORTER_CONFIG.getClassName())) {
+        } else if (Objects.equals(creationAgentConfig.getClassName(), ContainerAgentConfig.TRANSPORTER_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_TRANSPORTER);
         } else if (Objects.equals(creationAgentConfig.getClassName(),
-                AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
+                ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_DISTRIBUTION_AREA);
-        } else if (Objects.equals(creationAgentConfig.getClassName(), AgentConfig.DONOR_CONFIG.getClassName())) {
+        } else if (Objects.equals(creationAgentConfig.getClassName(), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_DONOR);
         } else if (Objects.equals(creationAgentConfig.getClassName(),
-                AgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
+                ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_COLLECTION_PLACE);
         }
         return listAgents;
@@ -189,11 +189,11 @@ public class DFHelper extends Agent {
 
     public Agent getAgent(String name) {
         ArrayList<Agent> listaAgentes = new ArrayList<>();
-        listaAgentes.addAll(getAgentsList(AgentConfig.TRUCK_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.TRANSPORTER_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.DISTRIBUTION_AREA_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.DONOR_CONFIG));
-        listaAgentes.addAll(getAgentsList(AgentConfig.COLLECTION_PLACE_CONFIG));
+        listaAgentes.addAll(getAgentsList(ContainerAgentConfig.TRUCK_CONFIG));
+        listaAgentes.addAll(getAgentsList(ContainerAgentConfig.TRANSPORTER_CONFIG));
+        listaAgentes.addAll(getAgentsList(ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG));
+        listaAgentes.addAll(getAgentsList(ContainerAgentConfig.DONOR_CONFIG));
+        listaAgentes.addAll(getAgentsList(ContainerAgentConfig.COLLECTION_PLACE_CONFIG));
 
         Agent targetAgent = listaAgentes.stream()
                 .filter(agent -> agent.getLocalName().equals(name))
@@ -201,12 +201,12 @@ public class DFHelper extends Agent {
                 .orElse(null);
         return Objects.nonNull(targetAgent) ? targetAgent : null;
         // if (Objects.isNull(targetAgent)){
-        // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
+        // targetAgent = getAgentsList(ContainerAgentConfig.TRANSPORTER_CONFIG).stream()
         // .filter(agent -> agent.getLocalName().equals(name))
         // .findFirst()
         // .orElse(null);
         // }
-        // targetAgent = getAgentsList(AgentConfig.TRANSPORTER_CONFIG).stream()
+        // targetAgent = getAgentsList(ContainerAgentConfig.TRANSPORTER_CONFIG).stream()
         // .filter(agent -> agent.getLocalName().equals(name))
         // .findFirst()
         // .orElse(null);
@@ -269,25 +269,25 @@ public class DFHelper extends Agent {
                     ((CommonAgent) agente).cargarInformacionAgente();
                 }
                 // if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
                 // } else if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.TRUCK_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.TRUCK_CONFIG.getClassRoute())) {
                 //     Truck agenteParse = (Truck) agente;
                 //     agenteParse.cargarInformacionAgente();
                 // } else if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
                 //     Transporter agenteParse = (Transporter) agente;
                 //     agenteParse.cargarInformacionAgente();
                 // } else if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
                 //     DistributionArea agenteParse = (DistributionArea) agente;
                 //     agenteParse.cargarInformacionAgente();
                 // } else if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.DONOR_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.DONOR_CONFIG.getClassRoute())) {
                 //     Donor agenteParse = (Donor) agente;
                 //     agenteParse.cargarInformacionAgente();
                 // } else if (Objects.equals(agente.getClass().getName(),
-                //         AgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+                //         ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
                 //     CollectionPlace agenteParse = (CollectionPlace) agente;
                 //     agenteParse.cargarInformacionAgente();
                 // }
@@ -304,25 +304,25 @@ public class DFHelper extends Agent {
             protected ACLMessage prepareResponse(ACLMessage request) {
                 ACLMessage reply = request.createReply();
                 if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.ADMINISTRATOR_CONFIG.getClassRoute())) {
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.TRUCK_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.TRUCK_CONFIG.getClassRoute())) {
                     Truck agenteParse = (Truck) agente;
                     agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.TRANSPORTER_CONFIG.getClassRoute())) {
                     Transporter agenteParse = (Transporter) agente;
                     agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG.getClassRoute())) {
                     DistributionArea agenteParse = (DistributionArea) agente;
                     agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.DONOR_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.DONOR_CONFIG.getClassRoute())) {
                     Donor agenteParse = (Donor) agente;
                     agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 } else if (Objects.equals(agente.getClass().getName(),
-                        AgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
+                        ContainerAgentConfig.COLLECTION_PLACE_CONFIG.getClassRoute())) {
                     CollectionPlace agenteParse = (CollectionPlace) agente;
                     agenteParse.setEnabled(Boolean.parseBoolean(request.getContent()));
                 }
@@ -439,3 +439,6 @@ public class DFHelper extends Agent {
     }
 
 }
+
+
+

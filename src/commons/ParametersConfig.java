@@ -1,69 +1,96 @@
 package src.commons;
 
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import javax.measure.Quantity;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.quantity.Speed;
 import javax.measure.quantity.Time;
 
-import tech.units.indriya.quantity.Quantities;
+import src.config.AppConfig;
+import src.config.ConfigLoader;
 
-import javax.measure.Unit;
-
+/**
+ * Punto UNICO de acceso a la configuracion del sistema.
+ *
+ * IMPORTANTE: la API publica (nombres de campos) se mantiene identica a la
+ * version original, para NO tener que modificar los agentes ni el resto del
+ * codigo. La diferencia es que ahora los valores se cargan desde el archivo
+ * externo src/config/config.json (via ConfigLoader/AppConfig) en un bloque
+ * estatico, en lugar de estar hardcodeados aqui.
+ *
+ * Las unidades se convierten a la unidad estandar del sistema reutilizando
+ * CustomUnits, igual que antes (por ejemplo km/h -> m/s, minutos -> segundos).
+ */
 public class ParametersConfig {
-        public final static ArrayList<Integer> MATERIAL_STOCK_SIZES = new ArrayList<>(
-                        Arrays.asList(20000, 2250, 2000, 1600, 1000, 500));
 
-        protected static final Unit<Length> STANDARD_LENGTH_UNIT = CustomUnits.METRE;
-        protected static final Unit<Time> STANDARD_TIME_UNIT = CustomUnits.SECOND;
-        protected static final Unit<Speed> STANDARD_SPEED_UNIT = CustomUnits.METRE_PER_SECOND;
-        protected static final Unit<Time> STANDARD_RESULTS_TIME_UNIT = CustomUnits.MILLISECOND;
+    // Config cruda cargada del JSON
+    private static final AppConfig CONFIG = ConfigLoader.get();
 
-        // PERCENTAGE
-        public final static double REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT = 1;
-        public final static double REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT = 0;
-        public final static double PROPOSED_AMOUNT_HELP_WEIGHING_PERCENT = 1;
-        public final static double PROPOSED_DISTANCIA_WEIGHING_PERCENT = 0;
-        public final static double TRANSPORTATION_START_TIME_WEIGHING_PERCENT = 1;
-        public final static double TRANSPORTATION_END_TIME_WEIGHING_PERCENT = 0;
-        public final static double TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING_PERCENT = 0;
-        public final static double DISTRIBUTION_CANTIDAD_MINIMA_STOCK_PERCENT = 0.75;
-        public final static double DONOR_CANTIDAD_MINIMA_STOCK_PERCENT = 0.20;
+    // ===== UNIDADES ESTANDAR (constantes del sistema, no configurables) =====
+    protected static final Unit<Length> STANDARD_LENGTH_UNIT = CustomUnits.METRE;
+    protected static final Unit<Time> STANDARD_TIME_UNIT = CustomUnits.SECOND;
+    protected static final Unit<Speed> STANDARD_SPEED_UNIT = CustomUnits.METRE_PER_SECOND;
+    protected static final Unit<Time> STANDARD_RESULTS_TIME_UNIT = CustomUnits.MILLISECOND;
 
-        public final static Integer AMOUNT_BY_PERSON_CC = 2500;
-        public final static long DELAY_BY_PERSON_TIME = (long) CustomUnits.pipeStandarTime(1, CustomUnits.MINUTE,
-                        long.class);
-        public final static long EXECUTION_INIT_TIME = (long) CustomUnits.pipeStandarTime(0, CustomUnits.MINUTE,
-                        long.class);
-        public final static long EXECUTION_ADD_TIME = (long) CustomUnits.pipeStandarTime(5, CustomUnits.MINUTE,
-                        long.class);
-        public final static double LOADED_SPEED = (double) CustomUnits.pipeStandarSpeed(30.0,
-                        CustomUnits.KILOMETRE_PER_HOUR, double.class);
-        public final static double NO_LOADED_SPEED = (double) CustomUnits.pipeStandarSpeed(50.0,
-                        CustomUnits.KILOMETRE_PER_HOUR, double.class);
-        public final static double STANDARD_SPEED = (double) CustomUnits.pipeStandarSpeed(50.0,
-                        CustomUnits.KILOMETRE_PER_HOUR, double.class);
+    // ===== TAMANOS DE STOCK =====
+    public static final ArrayList<Integer> MATERIAL_STOCK_SIZES = CONFIG.materialStockSizes;
 
-        // CONSTANTS
-        public final static long ERROR_LONG = -1;
-        public final static String ASC_STRING = "ASCENDENTE", DESC_STRING = "DESCENDENTE";
+    // ===== PESOS (percentages) =====
+    public static final double REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT = CONFIG.weights.requiredSupplyPersonasPercent;
+    public static final double REQUIRED_SUPPLY_DISTANCIA_WEIGHING_PERCENT = CONFIG.weights.requiredSupplyDistancePercent;
+    public static final double PROPOSED_AMOUNT_HELP_WEIGHING_PERCENT = CONFIG.weights.proposedAmountHelpPercent;
+    public static final double PROPOSED_DISTANCIA_WEIGHING_PERCENT = CONFIG.weights.proposedDistancePercent;
+    public static final double TRANSPORTATION_START_TIME_WEIGHING_PERCENT = CONFIG.weights.transportationStartTimePercent;
+    public static final double TRANSPORTATION_END_TIME_WEIGHING_PERCENT = CONFIG.weights.transportationEndTimePercent;
+    public static final double TRANSPORTATION_QUANTITY_TRANSPORTED_WEIGHING_PERCENT = CONFIG.weights.transportationQuantityTransportedPercent;
 
-        public final static String STATE_SCENARIO_CONFIG_NOT_INITIALIZE = "SCENARIO_CONFIG_NO_INITIALIZE",
-                        STATE_SCENARIO_CONFIG_INITIALIZE = "SCENARIO_CONFIG_INITIALIZE",
-                        STATE_SCENARIO_CONFIG_EXECUTING = "SCENARIO_CONFIG_EXECUTING",
-                        STATE_SCENARIO_CONFIG_END = "SCENARIO_CONFIG_END";
+    // ===== UMBRALES DE STOCK =====
+    public static final double DISTRIBUTION_CANTIDAD_MINIMA_STOCK_PERCENT = CONFIG.stockThresholds.distributionMinStockPercent;
+    public static final double DONOR_CANTIDAD_MINIMA_STOCK_PERCENT = CONFIG.stockThresholds.donorMinStockPercent;
 
-        public final static String STATE_SUPPLY_ACTIVITY_PENDING = "STATE_SUPPLY_ACTIVITY_PENDING",
-                        STATE_SUPPLY_ACTIVITY_DOING = "STATE_SUPPLY_ACTIVITY_DOING",
-                        STATE_SUPPLY_ACTIVITY_DONE = "STATE_SUPPLY_ACTIVITY_DONE";
+    // ===== SIMULACION =====
+    public static final Integer AMOUNT_BY_PERSON_CC = CONFIG.simulation.amountByPersonCc;
 
-        public final static String NAME_ACTIVITY_REQUIRED = "NAME_ACTIVITY_REQUIRED",
-                        NAME_ACTIVITY_PROPOSED = "NAME_ACTIVITY_PROPOSED",
-                        NAME_ACTIVITY_TRANSPORTATION = "NAME_ACTIVITY_TRANSPORTATION";
-        //
-        public final static int N_TEST = 7;
+    public static final long DELAY_BY_PERSON_TIME = (long) CustomUnits.pipeStandarTime(
+            CONFIG.simulation.delayByPersonMinutes, CustomUnits.MINUTE, long.class);
+    public static final long EXECUTION_INIT_TIME = (long) CustomUnits.pipeStandarTime(
+            CONFIG.simulation.executionInitMinutes, CustomUnits.MINUTE, long.class);
+    public static final long EXECUTION_ADD_TIME = (long) CustomUnits.pipeStandarTime(
+            CONFIG.simulation.executionAddMinutes, CustomUnits.MINUTE, long.class);
 
+    // ===== VELOCIDADES (km/h -> unidad estandar) =====
+    public static final double LOADED_SPEED = (double) CustomUnits.pipeStandarSpeed(
+            CONFIG.speeds.loadedSpeed, CustomUnits.KILOMETRE_PER_HOUR, double.class);
+    public static final double NO_LOADED_SPEED = (double) CustomUnits.pipeStandarSpeed(
+            CONFIG.speeds.noLoadedSpeed, CustomUnits.KILOMETRE_PER_HOUR, double.class);
+    public static final double STANDARD_SPEED = (double) CustomUnits.pipeStandarSpeed(
+            CONFIG.speeds.standardSpeed, CustomUnits.KILOMETRE_PER_HOUR, double.class);
+
+    // ===== MODELO DE VIAJE (se usara en la etapa de la heuristica) =====
+    // Por ahora solo se lee como texto desde el JSON. Cuando implementemos el
+    // Strategy, aqui se convertira al enum correspondiente.
+    public static final String TRAVEL_MODEL = CONFIG.experiment.travelModel;
+
+    // ===== CONSTANTES (no configurables) =====
+    public static final long ERROR_LONG = -1;
+    public static final String ASC_STRING = "ASCENDENTE", DESC_STRING = "DESCENDENTE";
+    public static final String STATE_SCENARIO_CONFIG_NOT_INITIALIZE = "SCENARIO_CONFIG_NO_INITIALIZE",
+            STATE_SCENARIO_CONFIG_INITIALIZE = "SCENARIO_CONFIG_INITIALIZE",
+            STATE_SCENARIO_CONFIG_EXECUTING = "SCENARIO_CONFIG_EXECUTING",
+            STATE_SCENARIO_CONFIG_END = "SCENARIO_CONFIG_END";
+    public static final String STATE_SUPPLY_ACTIVITY_PENDING = "STATE_SUPPLY_ACTIVITY_PENDING",
+            STATE_SUPPLY_ACTIVITY_DOING = "STATE_SUPPLY_ACTIVITY_DOING",
+            STATE_SUPPLY_ACTIVITY_DONE = "STATE_SUPPLY_ACTIVITY_DONE";
+    public static final String NAME_ACTIVITY_REQUIRED = "NAME_ACTIVITY_REQUIRED",
+            NAME_ACTIVITY_PROPOSED = "NAME_ACTIVITY_PROPOSED",
+            NAME_ACTIVITY_TRANSPORTATION = "NAME_ACTIVITY_TRANSPORTATION";
+
+    // ===== TEST =====
+    public static final int N_TEST = CONFIG.experiment.nTest;
+
+    /** Acceso directo al AppConfig por si algun modulo necesita datos crudos (escenarios, rutas). */
+    public static AppConfig getAppConfig() {
+        return CONFIG;
+    }
 }
