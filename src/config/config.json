@@ -1,11 +1,15 @@
 ﻿{
-  "experiment": { "travelModel": "HAVERSINE", "nTest": 7 },
+  "experiments": [
+    { "travelModel": "HAVERSINE",    "enabled": true, "nTest": 7 },
+    { "travelModel": "GRAPH_HOPPER", "enabled": false, "nTest": 7 }
+  ],
   "graphHopper": { "baseUrl": "http://localhost:8989/route", "profile": "car", "useStandardSpeed": true },
   "simulation": { "amountByPersonCc": 2500, "delayByPersonMinutes": 1, "executionInitMinutes": 0, "executionAddMinutes": 5 },
   "speeds": { "unit": "KILOMETRE_PER_HOUR", "loadedSpeed": 30.0, "noLoadedSpeed": 50.0, "standardSpeed": 50.0 },
   "stockThresholds": { "distributionMinStockPercent": 0.75, "donorMinStockPercent": 0.20 },
   "weights": { "requiredSupplyPersonasPercent": 1, "requiredSupplyDistancePercent": 0, "proposedAmountHelpPercent": 1, "proposedDistancePercent": 0, "transportationStartTimePercent": 1, "transportationEndTimePercent": 0, "transportationQuantityTransportedPercent": 0 },
   "materialStockSizes": [20000, 2250, 2000, 1600, 1000, 500],
+  "materialStockSizesHeaderCSV": "StockBotellas_{size}_cc",
   "agents": {
     "administrator":    { "className": "Administrator",    "dataFile": null },
     "transporter":      { "className": "Transporter",      "dataFile": "./src/dataFiles/ArchivoAgente_Transporte.csv" },

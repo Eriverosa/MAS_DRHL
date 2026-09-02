@@ -20,7 +20,8 @@ import src.models.SupplyActivityOrder;
 import src.models.SupplyActivityRequired;
 
 public class FileGenerator {
-        String pathFolder = "./src/results/";
+        String travelModel = src.commons.ParametersConfig.TRAVEL_MODEL;
+        String pathFolder = "./src/results/" + travelModel + "/";
 
         // String csvFilePath = "ruta/del/archivo.csv";
         public void generateFile(String nameDocument, List<SupplyActivity> activitieSupplyActivityList) {
@@ -39,10 +40,10 @@ public class FileGenerator {
                                         "horaFinDescarga",
                                         "pointNameSupplyActivityProposed", "pointNameSupplyActivityRequired",
                                         "pointNameSupplyActivityTransportation", "ayudaRequerida", "ayudaTransportada",
-                                        "tiempoDuraciónConversacionRequerida (ms)",
-                                        "tiempoDuraciónConversacionPropuesta (ms)",
-                                        "tiempoDuraciónConversacionTransporte (ms)",
-                                        "tiempoDuraciónConversacionTotal (ms)",
+                                        "tiempoDuraciÃƒÂ³nConversacionRequerida (ms)",
+                                        "tiempoDuraciÃƒÂ³nConversacionPropuesta (ms)",
+                                        "tiempoDuraciÃƒÂ³nConversacionTransporte (ms)",
+                                        "tiempoDuraciÃƒÂ³nConversacionTotal (ms)",
                                         "cantidadNegociacionesTotal" };
                         writer.writeNext(header);
                         for (SupplyActivity supplyActivity : activitieSupplyActivityList) {
@@ -137,7 +138,7 @@ public class FileGenerator {
 
                         // };
                         // writer.writeNext(row);
-                        // // Suponiendo que activitieSupplyActivityList ya está definida
+                        // // Suponiendo que activitieSupplyActivityList ya estÃƒÂ¡ definida
                         // Map<Long, Integer> sumByStartHour = activitieSupplyActivityList.stream()
                         // .collect(Collectors.groupingBy(
                         // supplyActivity -> supplyActivity.getSupplyActivityOrder()

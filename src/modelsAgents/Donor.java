@@ -51,14 +51,7 @@ public class Donor extends Agent implements CommonAgent {
         this.enabled = true;
         this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(0)),
                 Double.parseDouble((String) listaArgumentos.get(1))));
-        ArrayList<Integer> listStockMaterial = new ArrayList<>(
-                Arrays.asList(Integer.parseInt((String) listaArgumentos.get(7)),
-                        Integer.parseInt((String) listaArgumentos.get(6)),
-                        Integer.parseInt((String) listaArgumentos.get(5)),
-                        Integer.parseInt((String) listaArgumentos.get(4)),
-                        Integer.parseInt((String) listaArgumentos.get(3)),
-                        Integer.parseInt((String) listaArgumentos.get(2))));
-        this.setMaterialStock(new MaterialStock(listStockMaterial));
+        this.setMaterialStock(MaterialStock.fromJson((String) listaArgumentos.get(2)));
         this.setMaterialStockReserved(new MaterialStock());
     }
 
@@ -142,13 +135,7 @@ public class Donor extends Agent implements CommonAgent {
             public void getValues() {
                 this.materialStock = getMaterialStock();
                 this.materialStockReserved = getMaterialStockReserved();
-                this.materialStockInitial = new MaterialStock(new ArrayList<>(
-                        Arrays.asList(Integer.parseInt((String) listaArgumentos.get(7)),
-                                Integer.parseInt((String) listaArgumentos.get(6)),
-                                Integer.parseInt((String) listaArgumentos.get(5)),
-                                Integer.parseInt((String) listaArgumentos.get(4)),
-                                Integer.parseInt((String) listaArgumentos.get(3)),
-                                Integer.parseInt((String) listaArgumentos.get(2)))));
+                this.materialStockInitial = MaterialStock.fromJson((String) listaArgumentos.get(2));
                 this.listSupplyActivities = getListSupplyActivities();
             }
 
@@ -191,7 +178,7 @@ public class Donor extends Agent implements CommonAgent {
                                 });
                     });
                 } else {
-                    System.out.println("Aun queda más del porcentaje");
+                    System.out.println("Aun queda mÃ¡s del porcentaje");
                 }
                 // if (this.materialStock.getTotalAmountHelpByCC() < (ParametersConfig.DONOR_CANTIDAD_MINIMA_STOCK_PERCENT
                 //         * this.materialStockInitial.getTotalAmountHelpByCC())) {

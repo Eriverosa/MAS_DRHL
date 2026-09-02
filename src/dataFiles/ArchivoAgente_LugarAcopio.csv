@@ -1,4 +1,4 @@
-NombreAgente;UbicacionLatitud;UbicacionLongitud;StockBotellas_0.5 lts;StockBotellas_1.0 lts;StockBotellas_1.6 lts;StockBotellas_2.0 lts;StockBotellas_2.250 lts;StockBotellas_20.0 lts
+NombreAgente;UbicacionLatitud;UbicacionLongitud;StockBotellas_500_cc;StockBotellas_1000_cc;StockBotellas_1600_cc;StockBotellas_2000_cc;StockBotellas_2250_cc;StockBotellas_20000_cc
 LugarDeAcopio1;-20.2274; -70.1350;0;0;0;0;0;0
 LugarDeAcopio2;-20.2152; -70.1476;0;0;0;0;0;0
 LugarDeAcopio3;-20.2207; -70.1361;0;0;0;0;0;0

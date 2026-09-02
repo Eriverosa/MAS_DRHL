@@ -247,31 +247,12 @@ public class Truck extends Agent implements CommonAgent {
     // }
 
     public static long getTravelTime(Ubication supplyActivityUbication, Ubication proposedActivityUbication) {
-        // Radio medio de la Tierra en metros
-        double radioTierra = (double) CustomUnits.pipeStandarLength(6371 * 1000, Units.METRE, double.class);
-
-        // Diferencias de latitud y longitud en radianes
-        double dLat = Math.toRadians(proposedActivityUbication.getLatitud() - supplyActivityUbication.getLatitud());
-        double dLon = Math.toRadians(proposedActivityUbication.getLongitud() - supplyActivityUbication.getLongitud());
-
-        // Fórmula de Haverseno
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(supplyActivityUbication.getLatitud()))
-                        * Math.cos(Math.toRadians(proposedActivityUbication.getLatitud())) * Math.sin(dLon / 2)
-                        * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        // Distancia en metros
-        double distancia = radioTierra * c;
-
-        // Velocidad en metros por segundo (asegúrate de que la velocidad esté en esta
-        // unidad)
-        double velocity = ParametersConfig.STANDARD_SPEED;
-        // System.out.println(distancia / velocity);
-        // Tiempo en segundos
-        return (long) (distancia / velocity);
+        return src.services.TravelTimeStrategyFactory.getStrategy()
+                .getTravelTime(supplyActivityUbication, proposedActivityUbication);
     }
 
+
+    
     public static int getMaxLoad(int capacidadCamion, int pesoCargar) {
         if (capacidadCamion <= 0 || pesoCargar <= 0) {
             return 0;

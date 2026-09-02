@@ -1,4 +1,4 @@
-NombreAgente;UbicacionLatitud;UbicacionLongitud;StockBotellas_0.5 lts;StockBotellas_1.0 lts;StockBotellas_1.6 lts;StockBotellas_2.0 lts;StockBotellas_2.250 lts;StockBotellas_20.0 lts
+NombreAgente;UbicacionLatitud;UbicacionLongitud;StockBotellas_500_cc;StockBotellas_1000_cc;StockBotellas_1600_cc;StockBotellas_2000_cc;StockBotellas_2250_cc;StockBotellas_20000_cc
 Donador1;-20.2367;-70.1492;961;1121;1462;1048;1974;876
 Donador2;-20.2298;-70.1415;1035;752;1205;1333;1885;1522
 Donador3;-20.2402;-70.1376;1123;1589;1337;985;725;1424

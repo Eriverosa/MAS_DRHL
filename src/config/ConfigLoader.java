@@ -44,7 +44,7 @@ public class ConfigLoader {
                 throw new IllegalStateException("El archivo de configuracion esta vacio: " + path);
             }
             System.out.println("[ConfigLoader] Configuracion cargada desde " + path
-                    + " | Modelo de viaje: " + config.experiment.travelModel);
+                    + " | Modelo de viaje: " + System.getProperty("travelModel", config.experiments.get(0).travelModel));
             return config;
         } catch (IOException e) {
             System.err.println("[ConfigLoader] No se pudo leer la configuracion en " + path);

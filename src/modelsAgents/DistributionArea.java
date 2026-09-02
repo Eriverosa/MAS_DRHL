@@ -56,14 +56,7 @@ public class DistributionArea extends Agent implements CommonAgent{
         this.setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(1)),
                 Double.parseDouble((String) listaArgumentos.get(2))));
         this.enabled = true;
-        ArrayList<Integer> listStockMaterial = new ArrayList<>(
-                Arrays.asList(Integer.parseInt((String) listaArgumentos.get(8)),
-                        Integer.parseInt((String) listaArgumentos.get(7)),
-                        Integer.parseInt((String) listaArgumentos.get(6)),
-                        Integer.parseInt((String) listaArgumentos.get(5)),
-                        Integer.parseInt((String) listaArgumentos.get(4)),
-                        Integer.parseInt((String) listaArgumentos.get(3))));
-        this.setMaterialStock(new MaterialStock(listStockMaterial));
+        this.setMaterialStock(MaterialStock.fromJson((String) listaArgumentos.get(3)));
         listSupplyActivities = new ArrayList<>();
     }
 

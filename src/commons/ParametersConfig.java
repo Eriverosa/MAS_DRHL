@@ -34,7 +34,8 @@ public class ParametersConfig {
     protected static final Unit<Time> STANDARD_RESULTS_TIME_UNIT = CustomUnits.MILLISECOND;
 
     // ===== TAMANOS DE STOCK =====
-    public static final ArrayList<Integer> MATERIAL_STOCK_SIZES = CONFIG.materialStockSizes;
+    public static ArrayList<Integer> MATERIAL_STOCK_SIZES = new ArrayList<>(CONFIG.materialStockSizes);
+    public static final String MATERIAL_STOCK_SIZES_HEADER = CONFIG.materialStockSizesHeaderCSV;
 
     // ===== PESOS (percentages) =====
     public static final double REQUIRED_SUPPLY_PERSONAS_WEIGHING_PERCENT = CONFIG.weights.requiredSupplyPersonasPercent;
@@ -70,7 +71,7 @@ public class ParametersConfig {
     // ===== MODELO DE VIAJE (se usara en la etapa de la heuristica) =====
     // Por ahora solo se lee como texto desde el JSON. Cuando implementemos el
     // Strategy, aqui se convertira al enum correspondiente.
-    public static final String TRAVEL_MODEL = CONFIG.experiment.travelModel;
+    public static final String TRAVEL_MODEL = System.getProperty("travelModel", CONFIG.experiments.get(0).travelModel);
 
     // ===== CONSTANTES (no configurables) =====
     public static final long ERROR_LONG = -1;
@@ -87,7 +88,7 @@ public class ParametersConfig {
             NAME_ACTIVITY_TRANSPORTATION = "NAME_ACTIVITY_TRANSPORTATION";
 
     // ===== TEST =====
-    public static final int N_TEST = CONFIG.experiment.nTest;
+    public static final int N_TEST = CONFIG.experiments.get(0).nTest;
 
     /** Acceso directo al AppConfig por si algun modulo necesita datos crudos (escenarios, rutas). */
     public static AppConfig getAppConfig() {

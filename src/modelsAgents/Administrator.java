@@ -335,7 +335,7 @@ public class Administrator extends Agent {
                 } else if (Objects.equals(request.getContent(), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
                     currObj = ContainerAgentConfig.DONOR_CONFIG;
                 } else {
-                    System.out.println("No deberia ir acá");
+                    System.out.println("No deberia ir acÃ¡");
                     System.exit(-1);
                 }
                 reply.setPerformative(tipo);
@@ -346,7 +346,7 @@ public class Administrator extends Agent {
             @Override
             protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
                 if (Objects.equals(currObj.getNumInFileAgents(), currObj.getNumCurrAgentsCreation())) {
-                    System.out.println("Creación de agentes finalizados para " + currObj.getClassName());
+                    System.out.println("CreaciÃ³n de agentes finalizados para " + currObj.getClassName());
                     currObj.setEnabledIterationBoolean(false);
                     loadDataGenerateAgent();
                 }
@@ -395,11 +395,11 @@ public class Administrator extends Agent {
                 if (header) {
                     ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
                     for (int i = n_columns; i < datos.size(); i++) {
-                        // Dividir el string en dos partes por el carácter "_"
+                        // Dividir el string en dos partes por el carÃ¡cter "_"
                         String[] data = datos.get(i).split("_");
                         // La primera parte permanece igual
                         String name = data[0];
-                        // La segunda parte contiene solo los dígitos numéricos
+                        // La segunda parte contiene solo los dÃ­gitos numÃ©ricos
                         String capacity = data[1].replaceAll("[^0-9]", "");
                         jsonObject = new JsonObject();
                         jsonObject.addProperty("name", name);
@@ -435,27 +435,18 @@ public class Administrator extends Agent {
 
     public void crearAgentesPuntoDistribucion() {
         CreationAgentConfig configObject = ContainerAgentConfig.DISTRIBUTION_AREA_CONFIG;
-
         try (CSVReader reader = new CSVReader(new FileReader(configObject.getFileRoute()))) {
             ArrayList<String> dataFile = reader.readAll().stream()
                     .flatMap(Arrays::stream)
                     .collect(Collectors.toCollection(ArrayList::new));
             configObject.setNumInFileAgents(dataFile.size() - 1);
-            Boolean header = true;
-            for (String value : dataFile) {
-                if (header) {
-                    header = false;
-                    continue;
-                }
-                ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
+            ArrayList<String> headerCols = new ArrayList<>(Arrays.asList(dataFile.get(0).split(";")));
+            for (int r = 1; r < dataFile.size(); r++) {
+                ArrayList<String> datos = new ArrayList<>(Arrays.asList(dataFile.get(r).split(";")));
+                String stockJson = buildStockJson(headerCols, datos);
                 configObject.getContainerController()
                         .createNewAgent(datos.get(0), configObject.getClassRoute(), new Object[] {
-                                // POBLACION
-                                datos.get(1),
-                                // UBICACION
-                                datos.get(2), datos.get(3),
-                                // STOCK
-                                datos.get(4), datos.get(5), datos.get(6), datos.get(7), datos.get(8), datos.get(9) })
+                                datos.get(1), datos.get(2), datos.get(3), stockJson })
                         .start();
             }
         } catch (IOException | CsvException | StaleProxyException e) {
@@ -470,19 +461,13 @@ public class Administrator extends Agent {
                     .flatMap(Arrays::stream)
                     .collect(Collectors.toCollection(ArrayList::new));
             configObject.setNumInFileAgents(dataFile.size() - 1);
-            Boolean header = true;
-            for (String value : dataFile) {
-                if (header) {
-                    header = false;
-                    continue;
-                }
-                ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
+            ArrayList<String> headerCols = new ArrayList<>(Arrays.asList(dataFile.get(0).split(";")));
+            for (int r = 1; r < dataFile.size(); r++) {
+                ArrayList<String> datos = new ArrayList<>(Arrays.asList(dataFile.get(r).split(";")));
+                String stockJson = buildStockJson(headerCols, datos);
                 configObject.getContainerController()
                         .createNewAgent(datos.get(0), configObject.getClassRoute(), new Object[] {
-                                // UBICACION
-                                datos.get(1), datos.get(2),
-                                // STOCK
-                                datos.get(3), datos.get(4), datos.get(5), datos.get(6), datos.get(7), datos.get(8) })
+                                datos.get(1), datos.get(2), stockJson })
                         .start();
             }
         } catch (IOException | CsvException | StaleProxyException e) {
@@ -497,24 +482,29 @@ public class Administrator extends Agent {
                     .flatMap(Arrays::stream)
                     .collect(Collectors.toCollection(ArrayList::new));
             configObject.setNumInFileAgents(dataFile.size() - 1);
-            Boolean header = true;
-            for (String value : dataFile) {
-                if (header) {
-                    header = false;
-                    continue;
-                }
-                ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
+            ArrayList<String> headerCols = new ArrayList<>(Arrays.asList(dataFile.get(0).split(";")));
+            for (int r = 1; r < dataFile.size(); r++) {
+                ArrayList<String> datos = new ArrayList<>(Arrays.asList(dataFile.get(r).split(";")));
+                String stockJson = buildStockJson(headerCols, datos);
                 configObject.getContainerController()
                         .createNewAgent(datos.get(0), configObject.getClassRoute(), new Object[] {
-                                // UBICACION
-                                datos.get(1), datos.get(2),
-                                // STOCK
-                                datos.get(3), datos.get(4), datos.get(5), datos.get(6), datos.get(7), datos.get(8) })
+                                datos.get(1), datos.get(2), stockJson })
                         .start();
             }
         } catch (IOException | CsvException | StaleProxyException e) {
             e.printStackTrace();
         }
+    }
+
+    private String buildStockJson(ArrayList<String> headerCols, ArrayList<String> rowCols) {
+        java.util.LinkedHashMap<Integer, Integer> stock = new java.util.LinkedHashMap<>();
+        for (int i = 0; i < headerCols.size(); i++) {
+            Integer size = src.commons.StockHeaderParser.parseSize(headerCols.get(i));
+            if (size != null && i < rowCols.size()) {
+                stock.put(size, Integer.parseInt(rowCols.get(i).trim()));
+            }
+        }
+        return new Gson().toJson(stock);
     }
 
     public DFHelper getDF_HELPER() {

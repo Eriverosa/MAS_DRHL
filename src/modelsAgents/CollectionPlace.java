@@ -74,14 +74,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
         supplyActivitiesList = new ArrayList<>();
         setUbication(new Ubication(Double.parseDouble((String) listaArgumentos.get(0)),
                 Double.parseDouble((String) listaArgumentos.get(1))));
-        ArrayList<Integer> listStockMaterial = new ArrayList<>(
-                Arrays.asList(Integer.parseInt((String) listaArgumentos.get(7)),
-                        Integer.parseInt((String) listaArgumentos.get(6)),
-                        Integer.parseInt((String) listaArgumentos.get(5)),
-                        Integer.parseInt((String) listaArgumentos.get(4)),
-                        Integer.parseInt((String) listaArgumentos.get(3)),
-                        Integer.parseInt((String) listaArgumentos.get(2))));
-        setMaterialStock(new MaterialStock(listStockMaterial));
+        setMaterialStock(MaterialStock.fromJson((String) listaArgumentos.get(2)));
     }
 
     public void BR_RequestInitializatorSimulation() {
@@ -386,7 +379,7 @@ public class CollectionPlace extends Agent implements CommonAgent {
                 if (this.ACCEPT_PROPOSAL_EVENT) {
                     BI_ConfirmSupplyActivity();
                 } else {
-                    DF_HELPER.println(myAgent, "Se analiza próxima iteración");
+                    DF_HELPER.println(myAgent, "Se analiza prÃ³xima");
                     F_SetActualSupplyActivity();
                 }
                 return 0;
