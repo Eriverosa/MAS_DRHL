@@ -130,7 +130,7 @@ public class Truck extends Agent implements CommonAgent {
             @Override
             public int onEnd() {
                 super.onEnd();
-                System.out.println("Agente " + this.getAgent().getLocalName() + ": se registra su creación.");
+                System.out.println("Agente " + this.getAgent().getLocalName() + ": se registra su creaciÃƒÆ’Ã‚Â³n.");
                 BI_CreacionFinalizada();
                 return 0;
             }
@@ -236,9 +236,16 @@ public class Truck extends Agent implements CommonAgent {
         });
     }
 
+    private Random randomRoute;
+
     public boolean searchRoute() {
-        Random random = new Random();
-        return random.nextBoolean();
+        // Determinista por camion: mismo resultado en todos los modelos de viaje,
+        // para que la unica variable del experimento sea la distancia.
+        if (randomRoute == null) {
+            randomRoute = new Random(
+                src.commons.ParametersConfig.RANDOM_SEED + getLocalName().hashCode());
+        }
+        return randomRoute.nextBoolean();
     }
 
     // public static long getInitTime(long l, long tiempoInicioDisponible, long

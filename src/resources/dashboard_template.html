@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAS_DRHL · Resultados de Simulación</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+background:#0d1117;color:#e6edf3;line-height:1.5}
+.wrap{max-width:1420px;margin:0 auto;padding:28px 20px 60px}
+header{border-bottom:1px solid #21262d;padding-bottom:20px;margin-bottom:26px}
+h1{font-size:26px;font-weight:650;letter-spacing:-.02em}
+.sub{color:#8b949e;font-size:14px;margin-top:6px}
+.badge{display:inline-block;background:#1f6feb22;color:#58a6ff;border:1px solid #1f6feb55;
+padding:3px 10px;border-radius:20px;font-size:12px;margin-top:10px;margin-right:6px}
+h2{font-size:17px;font-weight:600;margin:34px 0 14px;display:flex;align-items:center;gap:9px}
+h2::before{content:'';width:3px;height:17px;background:#58a6ff;border-radius:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:17px}
+.card .lbl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.07em}
+.card .val{font-size:29px;font-weight:660;margin:7px 0 2px}
+.card .note{font-size:12px;color:#8b949e}
+.ok{color:#3fb950}.warn{color:#d29922}.bad{color:#f85149}.blue{color:#58a6ff}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.tab{background:#161b22;border:1px solid #21262d;color:#8b949e;padding:8px 16px;
+border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s}
+.tab:hover{border-color:#58a6ff66;color:#e6edf3}
+.tab.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.sep{width:1px;height:22px;background:#21262d;margin:0 6px}
+.modelbtn{background:#161b22;border:1px solid #21262d;color:#8b949e;padding:8px 16px;
+border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.modelbtn.on-hv{background:#3fb95022;border-color:#3fb950;color:#3fb950}
+.modelbtn.on-gh{background:#8957e522;border-color:#8957e5;color:#a371f7}
+#map{height:560px;border-radius:10px;border:1px solid #21262d}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:#8b949e}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px}
+.panel{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:#8b949e;font-weight:600;font-size:11px;text-transform:uppercase;
+letter-spacing:.06em;padding:9px 10px;border-bottom:1px solid #21262d}
+td{padding:9px 10px;border-bottom:1px solid #21262d11}
+tbody tr:hover{background:#1f6feb0d}
+.bar{height:7px;background:#21262d;border-radius:4px;overflow:hidden;min-width:70px}
+.bar>div{height:100%;border-radius:4px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.note-box{background:#1f6feb11;border-left:3px solid #58a6ff;padding:13px 16px;
+border-radius:0 7px 7px 0;font-size:13.5px;color:#c9d1d9;margin-top:14px}
+.leaflet-popup-content-wrapper{background:#161b22;color:#e6edf3;border-radius:8px}
+.leaflet-popup-tip{background:#161b22}
+.pop{font-size:13px;line-height:1.7}.pop b{color:#58a6ff}
+.gentime{color:#484f58;font-size:11.5px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Sistema Multiagente de Distribución de Ayuda Humanitaria</h1>
+  <div class="sub">Iquique · Simulación JADE · Comparación Haversine vs. GraphHopper (red vial real)</div>
+  <div class="badge">generado automáticamente por ReportGenerator</div>
+  <div class="gentime" id="genTime"></div>
+</header>
+
+<h2>Indicadores globales</h2>
+<div class="cards" id="kpis"></div>
+
+<h2>Mapa de operaciones</h2>
+<div class="tabs" id="tabs"></div>
+<div id="map"></div>
+<div class="legend">
+  <span><i style="background:#f85149"></i>Donadores</span>
+  <span><i style="background:#58a6ff"></i>Puntos de distribución</span>
+  <span><i style="background:#d29922"></i>Bases de transportistas</span>
+  <span><i style="background:#3fb950"></i>Lugares de acopio</span>
+</div>
+<div class="note-box" id="noteMapa"></div>
+
+<h2>Cobertura de la demanda por escenario</h2>
+<div class="panel"><div id="chartCob"></div></div>
+
+<h2>Duración de la operación (makespan)</h2>
+<div class="panel"><div id="chartMk"></div></div>
+
+<h2>Detalle de entregas</h2>
+<div class="panel" style="max-height:460px;overflow:auto"><table id="tbl"></table></div>
+
+<h2>Carga por transportista</h2>
+<div class="panel"><div id="chartTr"></div></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const DATA = /*__DATA_JSON__*/;
+
+const ESC=Object.keys(DATA.esc_gh && Object.keys(DATA.esc_gh).length ? DATA.esc_gh : DATA.esc_hv);
+let actual=ESC[0];
+let modelo = (DATA.esc_gh && Object.keys(DATA.esc_gh).length) ? 'gh' : 'hv';
+
+function curEsc(){ return modelo==='gh'?DATA.esc_gh:DATA.esc_hv; }
+
+function kpis(){
+  const e=curEsc();
+  let tot=0,dem=0,ent=0,mk=0;
+  ESC.forEach(k=>{const a=(e[k]||[]);tot+=a.length;
+    dem+=a.reduce((s,x)=>s+x.req,0); ent+=a.reduce((s,x)=>s+x.ent,0);
+    if(a.length) mk=Math.max(mk,Math.max(...a.map(x=>x.finDesc)));});
+  const cob=dem?(100*ent/dem).toFixed(1):"0.0";
+  const cls=cob>=95?'ok':cob>=85?'warn':'bad';
+  const nomModelo = modelo==='gh'?'GraphHopper (red vial)':'Haversine (línea recta)';
+  document.getElementById('kpis').innerHTML=`
+  <div class="card"><div class="lbl">Modelo activo</div><div class="val ${modelo==='gh'?'blue':'ok'}" style="font-size:19px">${nomModelo}</div><div class="note">${ESC.length} escenarios simulados</div></div>
+  <div class="card"><div class="lbl">Actividades de entrega</div><div class="val">${tot}</div><div class="note">operaciones carga + descarga</div></div>
+  <div class="card"><div class="lbl">Ayuda entregada</div><div class="val ${cls}">${cob}%</div><div class="note">${ent.toLocaleString()} de ${dem.toLocaleString()} unidades</div></div>
+  <div class="card"><div class="lbl">Makespan máximo</div><div class="val">${mk.toLocaleString()}</div><div class="note">unidades de tiempo</div></div>`;
+}
+
+const map=L.map('map',{zoomControl:true}).setView([-20.2320,-70.1400],13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_3vdd_1_055798594d371c14eebc5731',
+ {attribution:'© OpenStreetMap · CARTO',maxZoom:19}).addTo(map);
+let capa=L.layerGroup().addTo(map);
+
+const COL={Donador:'#f85149',PuntoDistribucion:'#58a6ff',Transporte:'#d29922',LugarDeAcopio:'#3fb950'};
+function tipo(n){for(const k in COL) if(n.startsWith(k)) return k; return 'x'}
+
+function pintar(e){
+  capa.clearLayers();
+  const acts=(curEsc()[e]||[]);
+  const rutas={};
+  acts.forEach(a=>{const k=a.donador+'|'+a.punto;
+    if(!rutas[k])rutas[k]={d:a.donador,p:a.punto,v:0,n:0};
+    rutas[k].v+=a.ent;rutas[k].n++;});
+  const maxv=Math.max(...Object.values(rutas).map(r=>r.v),1);
+  const col = modelo==='gh' ? '#a371f7' : '#3fb950';
+
+  Object.values(rutas).forEach(r=>{
+    const key=r.d+'|'+r.p;
+    let latlngs;
+    if(modelo==='gh' && DATA.rutas_geo && DATA.rutas_geo[key]){
+      latlngs = DATA.rutas_geo[key];
+    } else {
+      const A=DATA.coords[r.d],B=DATA.coords[r.p];
+      if(!A||!B)return;
+      latlngs=[A,B];
+    }
+    L.polyline(latlngs,{color:col,weight:1.5+4.5*(r.v/maxv),opacity:.6})
+     .bindPopup(`<div class="pop"><b>${r.d} → ${r.p}</b><br>Transportado: <b>${r.v}</b> u.<br>Viajes: ${r.n}<br><span style="color:#8b949e">${modelo==='gh'?'Ruta por calles reales':'Línea recta (Haversine)'}</span></div>`)
+     .addTo(capa);
+  });
+
+  const usados=new Set();acts.forEach(a=>{usados.add(a.donador);usados.add(a.punto);usados.add(a.transportista)});
+  const entr={};acts.forEach(a=>{entr[a.punto]=(entr[a.punto]||0)+a.ent});
+  for(const n in DATA.coords){
+    const t=tipo(n),act=usados.has(n);
+    let rad=t==='PuntoDistribucion'?4+(DATA.pob[n]||200)/85:6;
+    L.circleMarker(DATA.coords[n],{radius:rad,color:COL[t],weight:act?2:1,
+      fillColor:COL[t],fillOpacity:act?.75:.18,opacity:act?1:.35})
+     .bindPopup(`<div class="pop"><b>${n}</b><br>`+
+      (t==='PuntoDistribucion'?`Población: ${DATA.pob[n]||'-'}<br>Recibido: <b>${entr[n]||0}</b> u.`:
+       t==='Donador'?'Centro donante':t==='Transporte'?'Base de flota':'Centro de acopio')+
+      `<br><span style="color:#8b949e">${act?'Activo en este escenario':'Sin actividad'}</span></div>`)
+     .addTo(capa);
+  }
+  document.getElementById('noteMapa').innerHTML = modelo==='gh'
+    ? 'Las rutas siguen la geometría real de las calles (GraphHopper). El grosor es proporcional al volumen transportado.'
+    : 'Modelo Haversine: distancia en línea recta (no existe geometría de calles en este modelo).';
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = ESC.map((e)=>
+    `<div class="tab${e===actual?' on':''}" data-e="${e}">${e}</div>`).join('') +
+    `<div class="sep"></div>
+     <div class="modelbtn ${modelo==='hv'?'on-hv':''}" id="btnHV">Haversine</div>
+     <div class="modelbtn ${modelo==='gh'?'on-gh':''}" id="btnGH">GraphHopper</div>`;
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{ actual=t.dataset.e; refrescar(); });
+  document.getElementById('btnHV').onclick=()=>{modelo='hv';refrescar();};
+  document.getElementById('btnGH').onclick=()=>{modelo='gh';refrescar();};
+}
+function refrescar(){ renderTabs(); kpis(); pintar(actual); chartCob(); chartMk(); tabla(actual); chartTr(actual); }
+
+function chartCob(){
+  const e=curEsc();
+  const W=1120,H=58*ESC.length+50,L0=205,BW=W-L0-115;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  ESC.forEach((k,i)=>{
+    const a=(e[k]||[]), dem=a.reduce((s,x)=>s+x.req,0), ent=a.reduce((s,x)=>s+x.ent,0);
+    const y=30+i*58,p=dem?ent/dem:0;
+    const c=p>=.99?'#3fb950':p>=.9?'#d29922':'#f85149';
+    s+=`<text x="0" y="${y+5}" fill="#e6edf3" font-size="14" font-weight="550">${k}</text>`;
+    s+=`<rect x="${L0}" y="${y-11}" width="${BW}" height="23" rx="5" fill="#21262d"/>`;
+    s+=`<rect x="${L0}" y="${y-11}" width="${BW*p}" height="23" rx="5" fill="${c}"/>`;
+    s+=`<text x="${L0+BW*p-10}" y="${y+5}" fill="#0d1117" font-size="12.5" font-weight="700" text-anchor="end">${(p*100).toFixed(1)}%</text>`;
+    s+=`<text x="${W-105}" y="${y+5}" fill="#8b949e" font-size="12.5">${ent.toLocaleString()}/${dem.toLocaleString()} u.</text>`;
+  });
+  document.getElementById('chartCob').innerHTML=s+'</svg>';
+}
+
+function chartMk(){
+  const W=1120,H=310,PL=60,PB=68,PT=22;
+  const mkGH = ESC.map(k=>{const a=(DATA.esc_gh[k]||[]); return a.length?Math.max(...a.map(x=>x.finDesc)):0;});
+  const mkHV = ESC.map(k=>{const a=(DATA.esc_hv[k]||[]); return a.length?Math.max(...a.map(x=>x.finDesc)):0;});
+  const mx=Math.max(...mkGH,...mkHV,1)*1.12;
+  const bw=(W-PL-30)/ESC.length;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  for(let i=0;i<=4;i++){const v=mx*i/4,y=H-PB-(H-PB-PT)*(i/4);
+    s+=`<line x1="${PL}" y1="${y}" x2="${W-20}" y2="${y}" stroke="#21262d"/>`;
+    s+=`<text x="${PL-9}" y="${y+4}" fill="#8b949e" font-size="11" text-anchor="end">${Math.round(v)}</text>`;}
+  ESC.forEach((k,i)=>{
+    const hHV=(H-PB-PT)*(mkHV[i]/mx), hGH=(H-PB-PT)*(mkGH[i]/mx);
+    const xBase=PL+i*bw;
+    const x1=xBase+bw*.16, x2=xBase+bw*.52, w=bw*.28;
+    s+=`<rect x="${x1}" y="${H-PB-hHV}" width="${w}" height="${hHV}" rx="4" fill="#3fb950"/>`;
+    s+=`<text x="${x1+w/2}" y="${H-PB-hHV-8}" fill="#e6edf3" font-size="12" font-weight="650" text-anchor="middle">${mkHV[i]}</text>`;
+    s+=`<rect x="${x2}" y="${H-PB-hGH}" width="${w}" height="${hGH}" rx="4" fill="#a371f7"/>`;
+    s+=`<text x="${x2+w/2}" y="${H-PB-hGH-8}" fill="#e6edf3" font-size="12" font-weight="650" text-anchor="middle">${mkGH[i]}</text>`;
+    k.split(' ').forEach((p,kk)=>{
+      s+=`<text x="${xBase+bw*.34}" y="${H-PB+20+kk*14}" fill="#8b949e" font-size="11.5" text-anchor="middle">${p}</text>`});
+  });
+  s+=`<rect x="${W-230}" y="4" width="12" height="12" rx="3" fill="#3fb950"/><text x="${W-212}" y="14" fill="#8b949e" font-size="12">Haversine</text>`;
+  s+=`<rect x="${W-130}" y="4" width="12" height="12" rx="3" fill="#a371f7"/><text x="${W-112}" y="14" fill="#8b949e" font-size="12">GraphHopper</text>`;
+  document.getElementById('chartMk').innerHTML=s+'</svg>';
+}
+
+function tabla(e){
+  const acts=[...(curEsc()[e]||[])].sort((a,b)=>b.ent-a.ent);
+  let h=`<thead><tr><th>Donador</th><th>Punto destino</th><th>Vehículo</th>
+   <th class="num">Demanda</th><th class="num">Entregado</th><th style="width:130px">Cobertura</th>
+   <th class="num">T. viaje</th></tr></thead><tbody>`;
+  acts.forEach(a=>{
+    const p=a.req?a.ent/a.req:0,c=p>=.99?'#3fb950':p>=.5?'#d29922':'#f85149';
+    h+=`<tr><td>${a.donador}</td><td>${a.punto}</td>
+    <td style="color:#8b949e;font-size:12px">${a.camion}</td>
+    <td class="num">${a.req}</td><td class="num" style="color:${c};font-weight:600">${a.ent}</td>
+    <td><div class="bar"><div style="width:${p*100}%;background:${c}"></div></div></td>
+    <td class="num" style="color:#8b949e">${a.tvCarga+a.tvDesc}</td></tr>`;
+  });
+  document.getElementById('tbl').innerHTML=h+'</tbody>';
+}
+
+function chartTr(e){
+  const acts=(curEsc()[e]||[]),ag={};
+  acts.forEach(a=>{ag[a.transportista]=(ag[a.transportista]||0)+a.ent});
+  const arr=Object.entries(ag).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(...arr.map(x=>x[1]),1);
+  const W=1120,H=Math.max(150,arr.length*40+26),L0=135,BW=W-L0-95;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  arr.forEach(([n,v],i)=>{
+    const y=24+i*40;
+    s+=`<text x="0" y="${y+5}" fill="#e6edf3" font-size="13">${n}</text>`;
+    s+=`<rect x="${L0}" y="${y-10}" width="${BW}" height="21" rx="5" fill="#21262d"/>`;
+    s+=`<rect x="${L0}" y="${y-10}" width="${BW*v/mx}" height="21" rx="5" fill="#d29922"/>`;
+    s+=`<text x="${W-85}" y="${y+5}" fill="#8b949e" font-size="12.5">${v.toLocaleString()} u.</text>`;
+  });
+  document.getElementById('chartTr').innerHTML=s+'</svg>';
+}
+
+document.getElementById('genTime').textContent = 'Generado: ' + new Date().toLocaleString();
+refrescar();
+</script>
+</body>
+</html>

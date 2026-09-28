@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +44,9 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
 public class Administrator extends Agent {
+
+    // Random unico con la semilla fija del experimento.
+    private final Random RANDOM_AGENTES = new Random(src.commons.ParametersConfig.RANDOM_SEED);
     private final DFHelper DF_HELPER = DFHelper.getInstance();
     private long currExecutionTime;
     private boolean first = true;
@@ -94,7 +98,7 @@ public class Administrator extends Agent {
         for (BehaviourCreationScenarioConfig behaviorConfig : this.currCreationScenarioConfig
                 .getBehaviourCreationScnearionConfigList()) {
             ArrayList<Agent> agentsList = DF_HELPER.getAgentsList(behaviorConfig.getCreationAgentConfig());
-            Collections.shuffle(agentsList);
+            Collections.shuffle(agentsList, RANDOM_AGENTES);
             Integer nEnabledAgents = Objects.isNull(behaviorConfig.getnEnabledAgents()) ? agentsList.size()
                     : Math.min(behaviorConfig.getnEnabledAgents(), agentsList.size());
             listAgentsEnable.addAll(agentsList.subList(0, nEnabledAgents));
@@ -121,7 +125,7 @@ public class Administrator extends Agent {
                 if (enabBoolean) {
                     BI_UpdateState(listAgentsEnable, listAgentsDisable, false);
                 } else {
-                    DF_HELPER.println(myAgent, "Proceso de actualización de agentes finalizada");
+                    DF_HELPER.println(myAgent, "Proceso de actualizaciÃ³n de agentes finalizada");
                     BI_UpdateTimeEvent();
                 }
                 return 0;
@@ -230,7 +234,7 @@ public class Administrator extends Agent {
     }
 
     public void BI_InitializeSimulation(String nameAgent) {
-        DF_HELPER.println("SE INICIALIZA SIMULACION DE " + currCreationScenarioConfig.getName() + ", iteración "
+        DF_HELPER.println("SE INICIALIZA SIMULACION DE " + currCreationScenarioConfig.getName() + ", iteraciÃ³n "
                 + currCreationScenarioConfig.getIterator().get());
         DF_HELPER.waitTime();
         ArrayList<Agent> agentsList = new ArrayList<>();
@@ -335,7 +339,7 @@ public class Administrator extends Agent {
                 } else if (Objects.equals(request.getContent(), ContainerAgentConfig.DONOR_CONFIG.getClassName())) {
                     currObj = ContainerAgentConfig.DONOR_CONFIG;
                 } else {
-                    System.out.println("No deberia ir acÃ¡");
+                    System.out.println("No deberia ir acÃƒÂ¡");
                     System.exit(-1);
                 }
                 reply.setPerformative(tipo);
@@ -346,7 +350,7 @@ public class Administrator extends Agent {
             @Override
             protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) {
                 if (Objects.equals(currObj.getNumInFileAgents(), currObj.getNumCurrAgentsCreation())) {
-                    System.out.println("CreaciÃ³n de agentes finalizados para " + currObj.getClassName());
+                    System.out.println("CreaciÃƒÂ³n de agentes finalizados para " + currObj.getClassName());
                     currObj.setEnabledIterationBoolean(false);
                     loadDataGenerateAgent();
                 }
@@ -395,11 +399,11 @@ public class Administrator extends Agent {
                 if (header) {
                     ArrayList<String> datos = new ArrayList<>(Arrays.asList(value.split(";")));
                     for (int i = n_columns; i < datos.size(); i++) {
-                        // Dividir el string en dos partes por el carÃ¡cter "_"
+                        // Dividir el string en dos partes por el carÃƒÂ¡cter "_"
                         String[] data = datos.get(i).split("_");
                         // La primera parte permanece igual
                         String name = data[0];
-                        // La segunda parte contiene solo los dÃ­gitos numÃ©ricos
+                        // La segunda parte contiene solo los dÃƒÂ­gitos numÃƒÂ©ricos
                         String capacity = data[1].replaceAll("[^0-9]", "");
                         jsonObject = new JsonObject();
                         jsonObject.addProperty("name", name);

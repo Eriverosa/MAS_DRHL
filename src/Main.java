@@ -1,3 +1,4 @@
+package src;
 import jade.core.Runtime;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -7,6 +8,9 @@ import jade.core.ProfileImpl;
 
 public class Main {
     public static void main(String[] args) throws StaleProxyException {
+        // Valida el config.json antes de ejecutar. Si hay errores, se detiene aqui.
+        src.config.ConfigValidator.validate();
+
         Profile p = new ProfileImpl();
         p.setParameter(Profile.MAIN_HOST, "localhost");
         p.setParameter(Profile.GUI, "false");

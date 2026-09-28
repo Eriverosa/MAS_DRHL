@@ -97,16 +97,16 @@ public class DFHelper extends Agent {
     public final MessageTemplate MESSAGE_TEMPLATE_END_SIMULATION = getMessageTemplate(
             INT_MESSAGE_END_SIMULATION, IC_END_SIMULATION);
 
-    // Método para obtener un mensaje con un performative y conversation ID
-    // específicos
+    // MÃ©todo para obtener un mensaje con un performative y conversation ID
+    // especÃ­ficos
     private ACLMessage getMessage(int performative, String conversationId) {
         ACLMessage msg = new ACLMessage(performative);
         msg.setConversationId(conversationId);
         return msg;
     }
 
-    // Método para obtener un MessageTemplate con un performative y conversation ID
-    // específicos
+    // MÃ©todo para obtener un MessageTemplate con un performative y conversation ID
+    // especÃ­ficos
     private MessageTemplate getMessageTemplate(int performative, String conversationId) {
         MessageTemplate mp = MessageTemplate.MatchPerformative(performative);
         MessageTemplate mi = MessageTemplate.MatchConversationId(conversationId);
@@ -122,7 +122,7 @@ public class DFHelper extends Agent {
         }
     }
 
-    public Agent getRegisteredAdministrador() {
+    public synchronized Agent getRegisteredAdministrador() {
         return LIST_REGISTERED_ADMINISTRATOR.get(0);
     }
 
@@ -143,7 +143,7 @@ public class DFHelper extends Agent {
         return instance;
     }
 
-    public void registrarServicio(Agent agente) {
+    public synchronized void registrarServicio(Agent agente) {
         if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.ADMINISTRATOR_CONFIG.getClassName())) {
             LIST_REGISTERED_ADMINISTRATOR.add((Administrator) agente);
         } else if (Objects.equals(this.getClaseAgente(agente), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
@@ -159,7 +159,7 @@ public class DFHelper extends Agent {
         }
     }
 
-    public ArrayList<Agent> getAgentsList(CreationAgentConfig creationAgentConfig) {
+    public synchronized ArrayList<Agent> getAgentsList(CreationAgentConfig creationAgentConfig) {
         ArrayList<Agent> listAgents = new ArrayList<>();
         if (Objects.equals(creationAgentConfig.getClassName(), ContainerAgentConfig.TRUCK_CONFIG.getClassName())) {
             listAgents.addAll(LIST_REGISTERED_TRUCK);
@@ -177,7 +177,7 @@ public class DFHelper extends Agent {
         return listAgents;
     }
 
-    public ArrayList<Agent> getAgentsList() {
+    public synchronized ArrayList<Agent> getAgentsList() {
         ArrayList<Agent> listAgents = new ArrayList<>();
         listAgents.addAll(LIST_REGISTERED_TRUCK);
         listAgents.addAll(LIST_REGISTERED_TRANSPORTER);
@@ -187,7 +187,7 @@ public class DFHelper extends Agent {
         return listAgents;
     }
 
-    public Agent getAgent(String name) {
+    public synchronized Agent getAgent(String name) {
         ArrayList<Agent> listaAgentes = new ArrayList<>();
         listaAgentes.addAll(getAgentsList(ContainerAgentConfig.TRUCK_CONFIG));
         listaAgentes.addAll(getAgentsList(ContainerAgentConfig.TRANSPORTER_CONFIG));
@@ -216,27 +216,27 @@ public class DFHelper extends Agent {
         // return null;
     }
 
-    public ArrayList<Administrator> getLIST_REGISTERED_ADMINISTRATOR() {
+    public synchronized ArrayList<Administrator> getLIST_REGISTERED_ADMINISTRATOR() {
         return LIST_REGISTERED_ADMINISTRATOR;
     }
 
-    public ArrayList<Truck> getLIST_REGISTERED_TRUCK() {
+    public synchronized ArrayList<Truck> getLIST_REGISTERED_TRUCK() {
         return LIST_REGISTERED_TRUCK;
     }
 
-    public ArrayList<Transporter> getLIST_REGISTERED_TRANSPORTER() {
+    public synchronized ArrayList<Transporter> getLIST_REGISTERED_TRANSPORTER() {
         return LIST_REGISTERED_TRANSPORTER;
     }
 
-    public ArrayList<DistributionArea> getLIST_REGISTERED_DISTRIBUTION_AREA() {
+    public synchronized ArrayList<DistributionArea> getLIST_REGISTERED_DISTRIBUTION_AREA() {
         return LIST_REGISTERED_DISTRIBUTION_AREA;
     }
 
-    public ArrayList<Donor> getLIST_REGISTERED_DONOR() {
+    public synchronized ArrayList<Donor> getLIST_REGISTERED_DONOR() {
         return LIST_REGISTERED_DONOR;
     }
 
-    public ArrayList<CollectionPlace> getLIST_REGISTERED_COLLECTION_PLACE() {
+    public synchronized ArrayList<CollectionPlace> getLIST_REGISTERED_COLLECTION_PLACE() {
         return LIST_REGISTERED_COLLECTION_PLACE;
     }
 
@@ -253,7 +253,7 @@ public class DFHelper extends Agent {
 
             @Override
             public int onEnd() {
-                System.out.println("Agente " + agente.getLocalName() + ": se registra su creación.");
+                System.out.println("Agente " + agente.getLocalName() + ": se registra su creaciÃ³n.");
                 return super.onEnd(); // To change body of generated methods, choose Tools | Templates.
             }
         });
@@ -332,14 +332,14 @@ public class DFHelper extends Agent {
         });
     }
 
-    public void addAllReceiver(ACLMessage msg, ArrayList<Agent> agents) {
+    public synchronized void addAllReceiver(ACLMessage msg, ArrayList<Agent> agents) {
         msg.clearAllReceiver();
         for (Agent agent : agents) {
             msg.addReceiver(agent.getAID());
         }
     }
 
-    public ArrayList<Administrator> getListRegisteredAdministrator() {
+    public synchronized ArrayList<Administrator> getListRegisteredAdministrator() {
         return LIST_REGISTERED_ADMINISTRATOR;
     }
 
@@ -349,7 +349,7 @@ public class DFHelper extends Agent {
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<Truck> getListRegisteredTruck() {
+    public synchronized ArrayList<Truck> getListRegisteredTruck() {
         return LIST_REGISTERED_TRUCK;
     }
 
@@ -359,7 +359,7 @@ public class DFHelper extends Agent {
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<Transporter> getListRegisteredTransporter() {
+    public synchronized ArrayList<Transporter> getListRegisteredTransporter() {
         return LIST_REGISTERED_TRANSPORTER;
     }
 
@@ -369,7 +369,7 @@ public class DFHelper extends Agent {
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<DistributionArea> getListRegisteredDistributionArea() {
+    public synchronized ArrayList<DistributionArea> getListRegisteredDistributionArea() {
         return LIST_REGISTERED_DISTRIBUTION_AREA;
     }
 
@@ -379,7 +379,7 @@ public class DFHelper extends Agent {
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<Donor> getListRegisteredDonor() {
+    public synchronized ArrayList<Donor> getListRegisteredDonor() {
         return LIST_REGISTERED_DONOR;
     }
 
@@ -389,7 +389,7 @@ public class DFHelper extends Agent {
                 .collect(Collectors.toList());
     }
 
-    public ArrayList<CollectionPlace> getListRegisteredCollectionPlace() {
+    public synchronized ArrayList<CollectionPlace> getListRegisteredCollectionPlace() {
         return LIST_REGISTERED_COLLECTION_PLACE;
     }
 

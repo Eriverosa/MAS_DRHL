@@ -1,7 +1,7 @@
-﻿{
+{
   "experiments": [
-    { "travelModel": "HAVERSINE",    "enabled": true, "nTest": 7 },
-    { "travelModel": "GRAPH_HOPPER", "enabled": false, "nTest": 7 }
+    { "travelModel": "HAVERSINE",   "enabled": true, "nTest": 7 },
+    { "travelModel": "GRAPH_HOPPER", "enabled": true, "nTest": 7 }
   ],
   "graphHopper": { "baseUrl": "http://localhost:8989/route", "profile": "car", "useStandardSpeed": true },
   "simulation": { "amountByPersonCc": 2500, "delayByPersonMinutes": 1, "executionInitMinutes": 0, "executionAddMinutes": 5 },
@@ -19,10 +19,6 @@
     "collectionPlace":  { "className": "CollectionPlace",  "dataFile": "./src/dataFiles/ArchivoAgente_LugarAcopio.csv" }
   },
   "scenarios": [
-    { "name": "PRE-PRINCIPAL-TERREMOTO",   "iterations": 1, "enabledAgents": { "transporter": 10, "truck": 10, "donor": 10, "distributionArea": 0,  "collectionPlace": 1 } },
-    { "name": "POST-PRINCIPAL-TERREMOTO",  "iterations": 1, "enabledAgents": { "transporter": 8,  "truck": 90, "donor": 8,  "distributionArea": 10, "collectionPlace": 1 } },
-    { "name": "POST-REPLICAS",             "iterations": 1, "enabledAgents": { "transporter": 7,  "truck": 85, "donor": 7,  "distributionArea": 15, "collectionPlace": 1 } },
-    { "name": "POST-TSUNAMI",              "iterations": 1, "enabledAgents": { "transporter": 6,  "truck": 75, "donor": 6,  "distributionArea": 18, "collectionPlace": 1 } },
-    { "name": "POST-SEGUNDO-TERREMOTO",    "iterations": 1, "enabledAgents": { "transporter": 3,  "truck": 50, "donor": 3,  "distributionArea": 23, "collectionPlace": 1 } }
+    { "name": "POST-PRINCIPAL-TERREMOTO",  "iterations": 100, "enabledAgents": { "transporter": 8,  "truck": 90, "donor": 8,  "distributionArea": 10, "collectionPlace": 1 } } 
   ]
 }

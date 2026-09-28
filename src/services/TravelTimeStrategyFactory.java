@@ -2,23 +2,23 @@ package src.services;
 
 import src.commons.ParametersConfig;
 
-// Unico lugar donde se decide el modelo. El nombre (current) viene del config.json
-// via ParametersConfig.TRAVEL_MODEL, y se le pasa a la strategy.
+// Unico lugar donde se decide el modelo. El modelo activo viene de
+// ParametersConfig.TRAVEL_MODEL (enum), resuelto desde config.json.
 public class TravelTimeStrategyFactory {
     private static TravelTimeStrategy cached = null;
-    private static String cachedModel = null;
+    private static ParametersConfig.Model cachedModel = null;
 
     public static synchronized TravelTimeStrategy getStrategy() {
-        String current = ParametersConfig.TRAVEL_MODEL;
-        if (cached == null || !current.equals(cachedModel)) {
+        ParametersConfig.Model current = ParametersConfig.TRAVEL_MODEL;
+        if (cached == null || current != cachedModel) {
             cachedModel = current;
             switch (current) {
-                case "GRAPH_HOPPER":
-                    cached = new GraphHopperStrategy(current);
+                case ParametersConfig.Model.GRAPH_HOPPER:
+                    cached = new GraphHopperStrategy(current.name());
                     break;
-                case "HAVERSINE":
+                case ParametersConfig.Model.HAVERSINE:
                 default:
-                    cached = new HaversineStrategy(current);
+                    cached = new HaversineStrategy(current.name());
                     break;
             }
         }

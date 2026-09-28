@@ -24,6 +24,11 @@ import src.config.ConfigLoader;
  */
 public class ParametersConfig {
 
+    // Semilla fija del experimento. Garantiza que todos los modelos de viaje
+    // habiliten/deshabiliten exactamente los mismos agentes, aislando la
+    // comparacion HAVERSINE vs GRAPH_HOPPER.
+    public static final long RANDOM_SEED = 20260911L;
+
     // Config cruda cargada del JSON
     private static final AppConfig CONFIG = ConfigLoader.get();
 
@@ -71,7 +76,14 @@ public class ParametersConfig {
     // ===== MODELO DE VIAJE (se usara en la etapa de la heuristica) =====
     // Por ahora solo se lee como texto desde el JSON. Cuando implementemos el
     // Strategy, aqui se convertira al enum correspondiente.
-    public static final String TRAVEL_MODEL = System.getProperty("travelModel", CONFIG.experiments.get(0).travelModel);
+    public enum Model {
+        HAVERSINE,
+        GRAPH_HOPPER
+    }
+
+    // Modelo activo: viene de -DtravelModel (run.ps1) o del primer experimento del JSON.
+    public static final Model TRAVEL_MODEL = Model.valueOf(
+            System.getProperty("travelModel", CONFIG.experiments.get(0).travelModel));
 
     // ===== CONSTANTES (no configurables) =====
     public static final long ERROR_LONG = -1;
@@ -86,7 +98,7 @@ public class ParametersConfig {
     public static final String NAME_ACTIVITY_REQUIRED = "NAME_ACTIVITY_REQUIRED",
             NAME_ACTIVITY_PROPOSED = "NAME_ACTIVITY_PROPOSED",
             NAME_ACTIVITY_TRANSPORTATION = "NAME_ACTIVITY_TRANSPORTATION";
-
+        
     // ===== TEST =====
     public static final int N_TEST = CONFIG.experiments.get(0).nTest;
 

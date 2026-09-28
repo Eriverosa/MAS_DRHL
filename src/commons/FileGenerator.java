@@ -20,12 +20,12 @@ import src.models.SupplyActivityOrder;
 import src.models.SupplyActivityRequired;
 
 public class FileGenerator {
-        String travelModel = src.commons.ParametersConfig.TRAVEL_MODEL;
-        String pathFolder = "./src/results/" + travelModel + "/";
+        String travelModel = src.commons.ParametersConfig.TRAVEL_MODEL.name();
+        String pathFolder = "./src/results/";
 
         // String csvFilePath = "ruta/del/archivo.csv";
         public void generateFile(String nameDocument, List<SupplyActivity> activitieSupplyActivityList) {
-                String filePath = pathFolder.concat(nameDocument).concat("_results.csv");
+                String filePath = pathFolder.concat((nameDocument + "_RESULTS_" + travelModel).toUpperCase()).concat(".csv");
                 char delimiter = ';';
                 char quotechar = '\0';
                 String[] row;
@@ -40,10 +40,10 @@ public class FileGenerator {
                                         "horaFinDescarga",
                                         "pointNameSupplyActivityProposed", "pointNameSupplyActivityRequired",
                                         "pointNameSupplyActivityTransportation", "ayudaRequerida", "ayudaTransportada",
-                                        "tiempoDuraciÃƒÂ³nConversacionRequerida (ms)",
-                                        "tiempoDuraciÃƒÂ³nConversacionPropuesta (ms)",
-                                        "tiempoDuraciÃƒÂ³nConversacionTransporte (ms)",
-                                        "tiempoDuraciÃƒÂ³nConversacionTotal (ms)",
+                                        "tiempoDuraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³nConversacionRequerida (ms)",
+                                        "tiempoDuraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³nConversacionPropuesta (ms)",
+                                        "tiempoDuraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³nConversacionTransporte (ms)",
+                                        "tiempoDuraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³nConversacionTotal (ms)",
                                         "cantidadNegociacionesTotal" };
                         writer.writeNext(header);
                         for (SupplyActivity supplyActivity : activitieSupplyActivityList) {
@@ -87,7 +87,7 @@ public class FileGenerator {
                                 };
                                 writer.writeNext(row);
                         }
-                        System.out.println("Archivo CSV generado con éxito.");
+                        System.out.println("Archivo CSV generado con ÃƒÂ©xito.");
                         // header = new String[] { "numeroNegociaciones", "tiempoMinimoProcesamiento",
                         // "tiempoMaximoProcesamiento",
                         // "tiempoPromedioProcesamiento", "tiempoTotal" };
@@ -138,7 +138,7 @@ public class FileGenerator {
 
                         // };
                         // writer.writeNext(row);
-                        // // Suponiendo que activitieSupplyActivityList ya estÃƒÂ¡ definida
+                        // // Suponiendo que activitieSupplyActivityList ya estÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ definida
                         // Map<Long, Integer> sumByStartHour = activitieSupplyActivityList.stream()
                         // .collect(Collectors.groupingBy(
                         // supplyActivity -> supplyActivity.getSupplyActivityOrder()
@@ -163,14 +163,14 @@ public class FileGenerator {
                         // };
                         // writer.writeNext(row);
                         // }
-                        System.out.println("Archivo CSV generado con éxito.");
+                        System.out.println("Archivo CSV generado con ÃƒÂ©xito.");
                 } catch (IOException e) {
                         e.printStackTrace();
                 }
         }
 
         public void generateFileDisaggregated(String nameDocument, List<SupplyActivity> activitieSupplyActivityList) {
-                String filePath = pathFolder.concat(nameDocument).concat("_RESULTS_DISAGGREGATED.csv");
+                String filePath = pathFolder.concat((nameDocument + "_RESULTS_DISAGGREGATED_" + travelModel).toUpperCase()).concat(".csv");
                 char delimiter = ';';
                 char quotechar = '\0';
                 try (ICSVWriter writer = new CSVWriterBuilder(new FileWriter(filePath))
@@ -211,7 +211,7 @@ public class FileGenerator {
                                                                 .getCantidadPersonaRequired())
                                 });
                         }
-                        System.out.println("Archivo CSV generado con éxito.");
+                        System.out.println("Archivo CSV generado con ÃƒÂ©xito.");
                 } catch (IOException e) {
                         e.printStackTrace();
                 }
